@@ -1,38 +1,42 @@
-// C++ program to illustrate the client application in the 
-// socket programming 
-#include <cstring> 
-#include <iostream> 
-#include <netinet/in.h> 
-#include <sys/socket.h> 
-#include <unistd.h> 
+#include <cstring>
+#include <iostream>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <unistd.h>
 
-int main(int ac, char **av) 
-{ 
-    if (ac != 3)
-    {
+int main(int ac, char **av)
+{
+    if (ac != 3) {
         std::cerr << "Usage: ./socketc <message> <port>" << std::endl;
         return 1;
     }
-	// creating socket 
-	int clientSocket = socket(AF_INET, SOCK_STREAM, 0); 
 
-	// specifying address 
-	sockaddr_in serverAddress; 
-	serverAddress.sin_family = AF_INET; 
+    int clientSocket = socket(AF_INET, SOCK_STREAM, 0);
+    sockaddr_in serverAddress;
+    serverAddress.sin_family = AF_INET;
     u_int16_t port = (u_int16_t)atoi(av[2]);
-	serverAddress.sin_port = htons(port); 
-	serverAddress.sin_addr.s_addr = INADDR_ANY; 
+    serverAddress.sin_port = htons(port);
+    serverAddress.sin_addr.s_addr = INADDR_ANY;
 
-	// sending connection request 
-	connect(clientSocket, (struct sockaddr*)&serverAddress, 
-			sizeof(serverAddress)); 
+    if (connect(clientSocket, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) < 0) {
+        std::cerr << "Connection failed" << std::endl;
+        return 1;
+    }
 
-	// sending data 
-	const char* message = av[1]; 
-	send(clientSocket, message, strlen(message), 0); 
+    std::cout << "Connected to server. Type messages to send. Type 'exit' to quit." << std::endl;
 
-	// closing socket 
-	close(clientSocket); 
+    while (true) {
+        std::string message;
+        std::cout << "You: ";
+        std::getline(std::cin, message);
 
-	return 0; 
+        if (message == "exit") {
+            break;
+        }
+
+        send(clientSocket, message.c_str(), message.length(), 0);
+    }
+
+    close(clientSocket);
+    return 0;
 }
