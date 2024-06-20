@@ -1,30 +1,26 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ircserv.cpp                                        :+:      :+:    :+:   */
+/*   libs.hpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/06/03 18:21:32 by olahmami          #+#    #+#             */
-/*   Updated: 2024/06/20 16:01:08 by olahmami         ###   ########.fr       */
+/*   Created: 2024/06/20 10:18:15 by olahmami          #+#    #+#             */
+/*   Updated: 2024/06/20 10:52:27 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Includes/ircserv.hpp"
+#pragma once
 
-int main(int ac, char **av)
-{
-    Server irc;
-
-    try
-    {
-        irc.server(ac, av);
-    }
-    catch(const std::exception& e)
-    {
-        std::cerr << e.what() << std::endl;
-    }
-
-    std::cout << "Exiting IRC server" << std::endl;
-    return 0;
-}
+#include <iostream>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <cstdlib>
+#include <errno.h>
+#include <cstring>
+#include <cstddef>
+#include <vector>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/epoll.h>

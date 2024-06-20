@@ -1,30 +1,29 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ircserv.cpp                                        :+:      :+:    :+:   */
+/*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/06/03 18:21:32 by olahmami          #+#    #+#             */
-/*   Updated: 2024/06/20 16:01:08 by olahmami         ###   ########.fr       */
+/*   Created: 2024/06/20 10:06:30 by olahmami          #+#    #+#             */
+/*   Updated: 2024/06/20 12:55:21 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Includes/ircserv.hpp"
+#pragma once
 
-int main(int ac, char **av)
+#include "libs.hpp"
+
+class Client
 {
-    Server irc;
+    private:
+        int clientSocket;
+        struct epoll_event evClient;
 
-    try
-    {
-        irc.server(ac, av);
-    }
-    catch(const std::exception& e)
-    {
-        std::cerr << e.what() << std::endl;
-    }
-
-    std::cout << "Exiting IRC server" << std::endl;
-    return 0;
-}
+    public:
+        void setClientSocket(int const& serverSocket);
+        int getClientSocket() const;
+        
+        void setClientEvents(int const& epollSocket);
+        struct epoll_event getClientEvents() const;
+};
