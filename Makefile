@@ -6,14 +6,14 @@
 #    By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/06/03 12:31:08 by olahmami          #+#    #+#              #
-#    Updated: 2024/06/20 13:22:21 by olahmami         ###   ########.fr        #
+#    Updated: 2024/06/21 14:22:38 by olahmami         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 CXX = c++
 CXXFLAGS = -std=c++98 -Wall -Werror -Wextra -fsanitize=address
 NAME = ircserv
-SRCS = ircserv.cpp Server.cpp Client.cpp
+SRCS = ircserv.cpp Server.cpp Client.cpp outils.cpp
 OBJS = $(SRCS:.cpp=.o)
 
 all: $(NAME)

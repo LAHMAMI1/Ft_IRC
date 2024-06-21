@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/03 18:21:28 by olahmami          #+#    #+#             */
-/*   Updated: 2024/06/20 10:51:33 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/06/21 14:22:54 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,3 +14,5 @@
 
 #include "Server.hpp"
 #include "Client.hpp"
+
+void    sigHandler(int signum);

@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/20 10:06:30 by olahmami          #+#    #+#             */
-/*   Updated: 2024/06/20 12:55:21 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/06/21 10:19:47 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,6 @@ class Client
         void setClientSocket(int const& serverSocket);
         int getClientSocket() const;
         
-        void setClientEvents(int const& epollSocket);
-        struct epoll_event getClientEvents() const;
+        void setClientEvents();
+        struct epoll_event& getClientEvents();
 };

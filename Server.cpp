@@ -6,11 +6,13 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/20 11:59:09 by olahmami          #+#    #+#             */
-/*   Updated: 2024/06/20 17:18:24 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/06/21 16:39:35 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Includes/ircserv.hpp"
+
+bool isShutdown = false;
 
 void Server::server(int ac, char **av)
 {
@@ -57,12 +59,11 @@ void Server::server(int ac, char **av)
     // Set the maximum number of events to be returned by epoll_wait
     maxEvents = 9;
     events.resize(maxEvents);
-
-    while (true)
+    while (isShutdown == false) 
     {
         // Wait for events to occur
         numEvents = epoll_wait(epollSocket, events.data(), maxEvents, -1);
-        if (numEvents < 0)
+        if (numEvents < 0 && isShutdown == false)
             throw std::runtime_error("Epoll wait failed");
 
         // Resize the events vector if it is full
@@ -74,12 +75,20 @@ void Server::server(int ac, char **av)
             // If the event is for the server socket, accept the incoming connection
             if (events[i].data.fd == serverSocket)
             {
-                clients.setClientSocket(serverSocket);
+                int clientSocket = accept(serverSocket, NULL, NULL);
+                if (clientSocket < 0)
+                    throw std::runtime_error("Accept failed");
+                clients.setClientSocket(clientSocket);
 
                 std::cout << "Client connected" << std::endl;
                 
                 // Add the client socket to the epoll instance
-                clients.setClientEvents(epollSocket);
+                clients.setClientEvents();
+                if (epoll_ctl(epollSocket, EPOLL_CTL_ADD, clients.getClientSocket(), &clients.getClientEvents()) < 0)
+                {
+                    throw std::runtime_error("Epoll control client failed");
+                    close(clients.getClientSocket());
+                }
             }
             // If the event is for a client socket, receive and process the message
             else

@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/20 10:18:15 by olahmami          #+#    #+#             */
-/*   Updated: 2024/06/20 10:52:27 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/06/21 16:37:58 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,3 +24,6 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/epoll.h>
+#include <csignal>
+
+extern bool isShutdown;
