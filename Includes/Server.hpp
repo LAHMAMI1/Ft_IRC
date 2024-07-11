@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/20 09:55:28 by olahmami          #+#    #+#             */
-/*   Updated: 2024/06/21 16:35:31 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/07/10 15:58:39 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,7 @@ class Server
         int numEvents;
         char buffer[1024];
         int bytesReceived;
+        std::string pwd;
 
     public:
         void server(int ac, char **av);

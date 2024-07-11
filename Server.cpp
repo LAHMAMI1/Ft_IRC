@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/20 11:59:09 by olahmami          #+#    #+#             */
-/*   Updated: 2024/06/21 16:39:35 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/07/11 14:08:02 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,9 @@ void Server::server(int ac, char **av)
      // Check if the correct number of arguments is provided
     if (ac != 3)
         throw std::invalid_argument("Usage: ./ircserv <port> <password>");
+
+    // Set the password
+    pwd = av[2];
 
     Client clients;
     // Create a socket for the server
@@ -79,9 +82,12 @@ void Server::server(int ac, char **av)
                 if (clientSocket < 0)
                     throw std::runtime_error("Accept failed");
                 clients.setClientSocket(clientSocket);
-
-                std::cout << "Client connected" << std::endl;
                 
+                std::string passwordRequest = "SERVER PASSWORD:\n";
+                send(clientSocket, passwordRequest.c_str(), passwordRequest.size(), 0);
+
+                std::cout << "Client connected: " << clientSocket << std::endl;
+
                 // Add the client socket to the epoll instance
                 clients.setClientEvents();
                 if (epoll_ctl(epollSocket, EPOLL_CTL_ADD, clients.getClientSocket(), &clients.getClientEvents()) < 0)
@@ -101,7 +107,26 @@ void Server::server(int ac, char **av)
                     close(events[i].data.fd);
                 }
                 else
-                    std::cout << "Message from client: " << buffer << std::endl;
+                {
+                    std::string message(buffer);
+                    // Check if the message starts with "PASS"
+                    if (message.rfind("PASS", 0) == 0)
+                    {
+                        std::string receivedPassword = message.substr(5);
+                        trim(receivedPassword);
+                        if (receivedPassword == pwd)
+                            std::cout << "Password verified." << std::endl;
+                        else
+                        {
+                            std::cout << "Invalid password." << std::endl;
+                            std::string errorMsg = "Invalid password.\n";
+                            send(events[i].data.fd, errorMsg.c_str(), errorMsg.size(), 0);
+                            close(events[i].data.fd);
+                        }
+                    }
+                    else
+                        std::cout << "Message from client: " << message << std::endl;
+                }
             }
         }
     }
