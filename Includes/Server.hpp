@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/20 09:55:28 by olahmami          #+#    #+#             */
-/*   Updated: 2024/07/10 15:58:39 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/07/12 14:51:35 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ class Server
     private:
         int serverSocket;
         sockaddr_in serverAddress;
-        u_int16_t port;
+        int port;
         int epollSocket;
         struct epoll_event evServer;
         int maxEvents;
@@ -31,4 +31,5 @@ class Server
 
     public:
         void server(int ac, char **av);
+        int getServerSocket() const;
 };

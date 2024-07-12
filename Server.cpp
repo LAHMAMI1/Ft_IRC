@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/20 11:59:09 by olahmami          #+#    #+#             */
-/*   Updated: 2024/07/11 14:08:02 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/07/12 22:19:37 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,8 @@ void Server::server(int ac, char **av)
 
     // Set the password
     pwd = av[2];
+    if (pwd.empty() || pwd.length() < 8)
+        throw std::invalid_argument("Password must be at least 8 characters long and not empty");
 
     Client clients;
     // Create a socket for the server
@@ -34,7 +36,9 @@ void Server::server(int ac, char **av)
 
     // Set up the server address
     serverAddress.sin_family = AF_INET;
-    port = (u_int16_t)atoi(av[1]);
+    port = atoi(av[1]);
+    if (port < 1024 || port > 65535)
+        throw std::invalid_argument("Port must be a number between 1024 and 65535");
     serverAddress.sin_port = htons(port);
     serverAddress.sin_addr.s_addr = INADDR_ANY;
 
@@ -83,7 +87,7 @@ void Server::server(int ac, char **av)
                     throw std::runtime_error("Accept failed");
                 clients.setClientSocket(clientSocket);
                 
-                std::string passwordRequest = "SERVER PASSWORD:\n";
+                std::string passwordRequest = "ENTER SERVER PASSWORD:\n";
                 send(clientSocket, passwordRequest.c_str(), passwordRequest.size(), 0);
 
                 std::cout << "Client connected: " << clientSocket << std::endl;
@@ -93,7 +97,7 @@ void Server::server(int ac, char **av)
                 if (epoll_ctl(epollSocket, EPOLL_CTL_ADD, clients.getClientSocket(), &clients.getClientEvents()) < 0)
                 {
                     throw std::runtime_error("Epoll control client failed");
-                    close(clients.getClientSocket());
+                    closeIfNot(clients.getClientSocket());
                 }
             }
             // If the event is for a client socket, receive and process the message
@@ -115,7 +119,7 @@ void Server::server(int ac, char **av)
                         std::string receivedPassword = message.substr(5);
                         trim(receivedPassword);
                         if (receivedPassword == pwd)
-                            std::cout << "Password verified." << std::endl;
+                            std::cout << "Client connected: " << clients.getClientSocket() << std::endl;
                         else
                         {
                             std::cout << "Invalid password." << std::endl;
@@ -124,8 +128,8 @@ void Server::server(int ac, char **av)
                             close(events[i].data.fd);
                         }
                     }
-                    else
-                        std::cout << "Message from client: " << message << std::endl;
+                    // else
+                    //     std::cout << "Message from client: " << message << std::endl;
                 }
             }
         }
@@ -133,3 +137,5 @@ void Server::server(int ac, char **av)
 
     close(serverSocket);
 }
+
+int Server::getServerSocket() const { return serverSocket; }

@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/21 14:21:37 by olahmami          #+#    #+#             */
-/*   Updated: 2024/07/11 13:51:42 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/07/12 14:57:02 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,4 +29,10 @@ std::string trim(std::string& trimmedStr)
         trimmedStr = trimmedStr.substr(0, end + 1);
 
     return trimmedStr;
+}
+
+void closeIfNot(int fd)
+{
+    if (fd != -1)
+        close(fd);
 }
