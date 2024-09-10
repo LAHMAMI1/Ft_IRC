@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/20 11:59:09 by olahmami          #+#    #+#             */
-/*   Updated: 2024/07/12 22:19:37 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/09/10 19:03:48 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,7 +90,7 @@ void Server::server(int ac, char **av)
                 std::string passwordRequest = "ENTER SERVER PASSWORD:\n";
                 send(clientSocket, passwordRequest.c_str(), passwordRequest.size(), 0);
 
-                std::cout << "Client connected: " << clientSocket << std::endl;
+                std::cout << "Waiting the password from client: " << clientSocket << std::endl;
 
                 // Add the client socket to the epoll instance
                 clients.setClientEvents();
@@ -107,8 +107,8 @@ void Server::server(int ac, char **av)
                 bytesReceived = recv(events[i].data.fd, buffer, sizeof(buffer), 0);
                 if (bytesReceived <= 0)
                 {
-                    std::cout << "Client disconnected." << std::endl;
-                    close(events[i].data.fd);
+                    std::cout << "Client disconnected: " << clients.getClientSocket() << std::endl;
+                    closeIfNot(events[i].data.fd);
                 }
                 else
                 {
@@ -119,13 +119,17 @@ void Server::server(int ac, char **av)
                         std::string receivedPassword = message.substr(5);
                         trim(receivedPassword);
                         if (receivedPassword == pwd)
+                        {
                             std::cout << "Client connected: " << clients.getClientSocket() << std::endl;
+                            std::string successMsg = "Password accepted. Welcome to the server.\n";
+                            send(events[i].data.fd, successMsg.c_str(), successMsg.size(), 0);
+                        }
                         else
                         {
                             std::cout << "Invalid password." << std::endl;
                             std::string errorMsg = "Invalid password.\n";
                             send(events[i].data.fd, errorMsg.c_str(), errorMsg.size(), 0);
-                            close(events[i].data.fd);
+                            // closeIfNot(events[i].data.fd);
                         }
                     }
                     // else
@@ -134,8 +138,7 @@ void Server::server(int ac, char **av)
             }
         }
     }
-
-    close(serverSocket);
+    closeIfNot(serverSocket);
 }
 
 int Server::getServerSocket() const { return serverSocket; }
