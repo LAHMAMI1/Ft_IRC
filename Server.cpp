@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/20 11:59:09 by olahmami          #+#    #+#             */
-/*   Updated: 2024/09/10 19:03:48 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/09/14 11:37:30 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,8 @@ void Server::server(int ac, char **av)
         throw std::runtime_error("Socket creation failed");
 
     // Set the socket to non-blocking mode
-    fcntl(serverSocket, F_SETFL, O_NONBLOCK);
+    if (fcntl(serverSocket, F_SETFL, O_NONBLOCK) < 0)
+        throw std::runtime_error("Failed to set non-blocking mode");
 
     // Set up the server address
     serverAddress.sin_family = AF_INET;
@@ -47,7 +48,7 @@ void Server::server(int ac, char **av)
         throw std::runtime_error("Bind failed");
 
     // Start listening for incoming connections
-    if (listen(serverSocket, 5) < 0)
+    if (listen(serverSocket, SOMAXCONN) < 0)
         throw std::runtime_error("Listen failed");
 
     // Create an epoll instance
@@ -75,17 +76,20 @@ void Server::server(int ac, char **av)
 
         // Resize the events vector if it is full
         if (numEvents == maxEvents)
-            events.resize(maxEvents + 1);
+            events.resize(maxEvents * 2);
 
         for (int i = 0; i < numEvents; i++)
         {
             // If the event is for the server socket, accept the incoming connection
             if (events[i].data.fd == serverSocket)
             {
-                int clientSocket = accept(serverSocket, NULL, NULL);
+                int clientSocket = accept(events[i].data.fd, NULL, NULL);
                 if (clientSocket < 0)
                     throw std::runtime_error("Accept failed");
                 clients.setClientSocket(clientSocket);
+                
+                // Set the client socket to non-blocking mode
+                fcntl(clientSocket, F_SETFL, O_NONBLOCK);
                 
                 std::string passwordRequest = "ENTER SERVER PASSWORD:\n";
                 send(clientSocket, passwordRequest.c_str(), passwordRequest.size(), 0);
@@ -93,8 +97,9 @@ void Server::server(int ac, char **av)
                 std::cout << "Waiting the password from client: " << clientSocket << std::endl;
 
                 // Add the client socket to the epoll instance
-                clients.setClientEvents();
-                if (epoll_ctl(epollSocket, EPOLL_CTL_ADD, clients.getClientSocket(), &clients.getClientEvents()) < 0)
+                evServer.events = EPOLLIN | EPOLLET;
+                evServer.data.fd = clients.getClientSocket();
+                if (epoll_ctl(epollSocket, EPOLL_CTL_ADD, clients.getClientSocket(), &evServer) < 0)
                 {
                     throw std::runtime_error("Epoll control client failed");
                     closeIfNot(clients.getClientSocket());
@@ -103,11 +108,12 @@ void Server::server(int ac, char **av)
             // If the event is for a client socket, receive and process the message
             else
             {
-                bzero(buffer, sizeof(buffer));
+                std::fill(buffer, buffer + sizeof(buffer), 0);
                 bytesReceived = recv(events[i].data.fd, buffer, sizeof(buffer), 0);
                 if (bytesReceived <= 0)
                 {
-                    std::cout << "Client disconnected: " << clients.getClientSocket() << std::endl;
+                    std::cout << "Client disconnected: " << events[i].data.fd << std::endl;
+                    epoll_ctl(epollSocket, EPOLL_CTL_DEL, events[i].data.fd, NULL);
                     closeIfNot(events[i].data.fd);
                 }
                 else
@@ -129,7 +135,6 @@ void Server::server(int ac, char **av)
                             std::cout << "Invalid password." << std::endl;
                             std::string errorMsg = "Invalid password.\n";
                             send(events[i].data.fd, errorMsg.c_str(), errorMsg.size(), 0);
-                            // closeIfNot(events[i].data.fd);
                         }
                     }
                     // else
@@ -139,6 +144,7 @@ void Server::server(int ac, char **av)
         }
     }
     closeIfNot(serverSocket);
+    closeIfNot(epollSocket);
 }
 
 int Server::getServerSocket() const { return serverSocket; }
