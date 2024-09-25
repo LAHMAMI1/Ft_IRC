@@ -36,3 +36,22 @@ void closeIfNot(int fd)
     if (fd != -1)
         close(fd);
 }
+
+int ERR_NEEDMOREPARAMS(const std::string& message, int clientSocket)
+{
+    std::istringstream iss(message);
+    std::vector<std::string> split_message;
+    std::string word;
+
+    while (iss >> word)
+        split_message.push_back(word);
+    
+    if (split_message.size() < 2)
+    {
+        std::cout << clientSocket << " " << split_message[0] << " :Not enough parameters"<< std::endl;
+        std::string errorMsg = "Not enough parameters\n";
+        send(clientSocket, errorMsg.c_str(), errorMsg.size(), 0);
+        return 1;
+    }
+    return 0;
+}

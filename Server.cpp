@@ -33,7 +33,7 @@ void Server::server(int ac, char **av)
 
     // Set the socket to non-blocking mode
     if (fcntl(serverSocket, F_SETFL, O_NONBLOCK) < 0)
-        throw std::runtime_error("Failed to set non-blocking mode");
+        throw std::runtime_error("Failed to set non-blocking mode for the server socket");
 
     // Set up the server address
     serverAddress.sin_family = AF_INET;
@@ -89,7 +89,8 @@ void Server::server(int ac, char **av)
                 clients.setClientSocket(clientSocket);
                 
                 // Set the client socket to non-blocking mode
-                fcntl(clientSocket, F_SETFL, O_NONBLOCK);
+                if (fcntl(clientSocket, F_SETFL, O_NONBLOCK) < 0)
+                    throw std::runtime_error("Failed to set non-blocking mode for the client socket");
                 
                 std::string passwordRequest = "ENTER SERVER PASSWORD:\n";
                 send(clientSocket, passwordRequest.c_str(), passwordRequest.size(), 0);
@@ -124,7 +125,9 @@ void Server::server(int ac, char **av)
                     {
                         std::string receivedPassword = message.substr(5);
                         trim(receivedPassword);
-                        if (receivedPassword == pwd)
+                        if (ERR_NEEDMOREPARAMS(message, events[i].data.fd))
+                            continue;
+                        else if (receivedPassword == pwd)
                         {
                             std::cout << "Client connected: " << clients.getClientSocket() << std::endl;
                             std::string successMsg = "Password accepted. Welcome to the server.\n";
@@ -132,10 +135,27 @@ void Server::server(int ac, char **av)
                         }
                         else
                         {
-                            std::cout << "Invalid password." << std::endl;
-                            std::string errorMsg = "Invalid password.\n";
+                            std::cout <<  clients.getClientSocket() << " :Password incorrect" << std::endl;
+                            std::string errorMsg = "Password incorrect\n";
                             send(events[i].data.fd, errorMsg.c_str(), errorMsg.size(), 0);
                         }
+                    }
+                    else if (message.rfind("NICK", 0) == 0)
+                    {
+                        // std::string receivedNick = message.substr(5);
+                        // if (ERR_NEEDMOREPARAMS(message, events[i].data.fd))
+                        //     continue;
+                        // else if ()
+                        // {
+                            
+                        // }
+                        
+                        // else
+                        // {
+                        //     std::cout << "Client " << clients.getClientSocket() << " set nickname to: " << receivedNick << std::endl;
+                        //     std::string successMsg = "Nickname set to " + receivedNick + "\n";
+                        //     send(events[i].data.fd, successMsg.c_str(), successMsg.size(), 0);
+                        // }
                     }
                     // else
                     //     std::cout << "Message from client: " << message << std::endl;

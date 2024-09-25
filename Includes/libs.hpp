@@ -27,5 +27,6 @@
 #include <csignal>
 #include <algorithm>
 #include <cctype>
+#include <sstream>
 
 extern bool isShutdown;
