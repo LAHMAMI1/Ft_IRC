@@ -37,7 +37,7 @@ void closeIfNot(int fd)
         close(fd);
 }
 
-int ERR_NEEDMOREPARAMS(const std::string& message, int clientSocket)
+bool ERR_NEEDMOREPARAMS(const std::string& message, int clientSocket)
 {
     std::istringstream iss(message);
     std::vector<std::string> split_message;
@@ -51,7 +51,19 @@ int ERR_NEEDMOREPARAMS(const std::string& message, int clientSocket)
         std::cout << clientSocket << " " << split_message[0] << " :Not enough parameters"<< std::endl;
         std::string errorMsg = "Not enough parameters\n";
         send(clientSocket, errorMsg.c_str(), errorMsg.size(), 0);
-        return 1;
+        return true;
     }
-    return 0;
+    return false;
+}
+
+bool isValidNick(const std::string& receivedNick)
+{
+    if (!isalpha(receivedNick[0]))
+        return false;
+    for (size_t i = 1; i < receivedNick.size(); i++)
+    {
+        if (!isalnum(receivedNick[i]) && receivedNick[i] != '_' && receivedNick[i] != '-')
+            return false;
+    }
+    return true;
 }

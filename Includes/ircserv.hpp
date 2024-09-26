@@ -18,4 +18,5 @@
 void    sigHandler(int signum);
 std::string trim(std::string& trimmedStr);
 void closeIfNot(int fd);
-int ERR_NEEDMOREPARAMS(const std::string& message, int clientSocket);
+bool ERR_NEEDMOREPARAMS(const std::string& message, int clientSocket);
+bool isValidNick(const std::string& receivedNick);

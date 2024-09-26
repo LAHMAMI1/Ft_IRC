@@ -120,45 +120,72 @@ void Server::server(int ac, char **av)
                 else
                 {
                     std::string message(buffer);
-                    // Check if the message starts with "PASS"
-                    if (message.rfind("PASS", 0) == 0)
+                    enum ClientState { PASSWORD_REQUIRED, NICK_REQUIRED, USER_REQUIRED, READY};
+                    ClientState state = PASSWORD_REQUIRED;
+
+                    switch (state)
                     {
-                        std::string receivedPassword = message.substr(5);
-                        trim(receivedPassword);
-                        if (ERR_NEEDMOREPARAMS(message, events[i].data.fd))
-                            continue;
-                        else if (receivedPassword == pwd)
-                        {
-                            std::cout << "Client connected: " << clients.getClientSocket() << std::endl;
-                            std::string successMsg = "Password accepted. Welcome to the server.\n";
-                            send(events[i].data.fd, successMsg.c_str(), successMsg.size(), 0);
-                        }
-                        else
-                        {
-                            std::cout <<  clients.getClientSocket() << " :Password incorrect" << std::endl;
-                            std::string errorMsg = "Password incorrect\n";
-                            send(events[i].data.fd, errorMsg.c_str(), errorMsg.size(), 0);
-                        }
+                        case PASSWORD_REQUIRED:
+                            if (message.rfind("PASS", 0) == 0)
+                            {
+                                std::string receivedPassword = message.substr(5);
+                                trim(receivedPassword);
+                                if (ERR_NEEDMOREPARAMS(message, events[i].data.fd))
+                                    continue;
+                                else if (receivedPassword == pwd)
+                                {
+                                    std::cout << "Client connected: " << clients.getClientSocket() << std::endl;
+                                    std::string successMsg = "Password accepted. Welcome to the server.\n";
+                                    send(events[i].data.fd, successMsg.c_str(), successMsg.size(), 0);
+                                    state = NICK_REQUIRED;
+                                }
+                                else
+                                {
+                                    std::cout <<  clients.getClientSocket() << " :Password incorrect" << std::endl;
+                                    std::string errorMsg = "Password incorrect\n";
+                                    send(events[i].data.fd, errorMsg.c_str(), errorMsg.size(), 0);
+                                }
+                            }
+                            else
+                            {
+                                std::cout << "Client " << clients.getClientSocket() << " :Password required" << std::endl;
+                                std::string errorMsg = "Password required\n";
+                                send(events[i].data.fd, errorMsg.c_str(), errorMsg.size(), 0);
+                            }
+                            break;
+                        case NICK_REQUIRED:
+                            if (message.rfind("NICK", 0) == 0)
+                            {
+                                std::string receivedNick = message.substr(5);
+                                trim(receivedNick);
+                                if (ERR_NEEDMOREPARAMS(message, events[i].data.fd))
+                                    continue;
+                                else if (!isValidNick(receivedNick))
+                                {
+                                    std::cout << "Client " << clients.getClientSocket() << " " << receivedNick <<" :Invalid nickname" << std::endl;
+                                    std::string errorMsg = "Invalid nickname\n";
+                                    send(events[i].data.fd, errorMsg.c_str(), errorMsg.size(), 0);
+                                }
+                                else
+                                {
+                                    std::cout << "Client " << clients.getClientSocket() << " set nickname to: " << receivedNick << std::endl;
+                                    std::string successMsg = "Nickname set to " + receivedNick + "\n";
+                                    send(events[i].data.fd, successMsg.c_str(), successMsg.size(), 0);
+                                    state = USER_REQUIRED;
+                                }
+                            }
+                            else
+                            {
+                                std::cout << "Client " << clients.getClientSocket() << " :Nickname required" << std::endl;
+                                std::string errorMsg = "Nickname required\n";
+                                send(events[i].data.fd, errorMsg.c_str(), errorMsg.size(), 0);
+                            }
+                            break;
+                        default:
+                            break;
                     }
-                    else if (message.rfind("NICK", 0) == 0)
-                    {
-                        // std::string receivedNick = message.substr(5);
-                        // if (ERR_NEEDMOREPARAMS(message, events[i].data.fd))
-                        //     continue;
-                        // else if ()
-                        // {
-                            
-                        // }
-                        
-                        // else
-                        // {
-                        //     std::cout << "Client " << clients.getClientSocket() << " set nickname to: " << receivedNick << std::endl;
-                        //     std::string successMsg = "Nickname set to " + receivedNick + "\n";
-                        //     send(events[i].data.fd, successMsg.c_str(), successMsg.size(), 0);
-                        // }
-                    }
-                    // else
-                    //     std::cout << "Message from client: " << message << std::endl;
+
+                    
                 }
             }
         }
