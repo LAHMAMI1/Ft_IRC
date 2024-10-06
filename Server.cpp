@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/20 11:59:09 by olahmami          #+#    #+#             */
-/*   Updated: 2024/09/14 11:37:30 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/10/06 16:52:31 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,6 @@ void Server::server(int ac, char **av)
     if (pwd.empty() || pwd.length() < 8)
         throw std::invalid_argument("Password must be at least 8 characters long and not empty");
 
-    Client clients;
     // Create a socket for the server
     serverSocket = socket(AF_INET, SOCK_STREAM, 0);
     if (serverSocket < 0)
@@ -67,6 +66,10 @@ void Server::server(int ac, char **av)
     // Set the maximum number of events to be returned by epoll_wait
     maxEvents = 9;
     events.resize(maxEvents);
+
+    // Set the clients number
+    std::vector<Client> clients(maxEvents);
+
     while (isShutdown == false) 
     {
         // Wait for events to occur
@@ -86,7 +89,28 @@ void Server::server(int ac, char **av)
                 int clientSocket = accept(events[i].data.fd, NULL, NULL);
                 if (clientSocket < 0)
                     throw std::runtime_error("Accept failed");
-                clients.setClientSocket(clientSocket);
+
+                // resize the clients vector if it is full
+                if (clients.size() == clients.capacity())
+                    clients.resize(clients.capacity() * 2);
+                
+                // Find the first available slot in the clients vector
+                clientIndex = -1;
+                for (std::vector<Client>::size_type j = 0; j < clients.size(); j++)
+                {
+                    if (clients[j].getClientSocket() == -1)
+                    {
+                        clientIndex = j;
+                        break;
+                    }
+                }
+
+                if (clientIndex == -1)
+                    throw std::runtime_error("No available slot for new client");
+                    
+                std::cout << "New client " << clientIndex << " connected: " << clients[clientIndex].getClientSocket() << std::endl;
+                clients[clientIndex].setClientSocket(clientSocket);
+                std::cout << "New client " << clientIndex << " connected: " << clients[clientIndex].getClientSocket() << std::endl;
                 
                 // Set the client socket to non-blocking mode
                 if (fcntl(clientSocket, F_SETFL, O_NONBLOCK) < 0)
@@ -99,11 +123,11 @@ void Server::server(int ac, char **av)
 
                 // Add the client socket to the epoll instance
                 evServer.events = EPOLLIN | EPOLLET;
-                evServer.data.fd = clients.getClientSocket();
-                if (epoll_ctl(epollSocket, EPOLL_CTL_ADD, clients.getClientSocket(), &evServer) < 0)
+                evServer.data.fd = clients[clientIndex].getClientSocket();
+                if (epoll_ctl(epollSocket, EPOLL_CTL_ADD, clients[clientIndex].getClientSocket(), &evServer) < 0)
                 {
                     throw std::runtime_error("Epoll control client failed");
-                    closeIfNot(clients.getClientSocket());
+                    closeIfNot(clients[clientIndex].getClientSocket());
                 }
             }
             // If the event is for a client socket, receive and process the message
@@ -120,10 +144,8 @@ void Server::server(int ac, char **av)
                 else
                 {
                     std::string message(buffer);
-                    enum ClientState { PASSWORD_REQUIRED, NICK_REQUIRED, USER_REQUIRED, READY};
-                    ClientState state = PASSWORD_REQUIRED;
 
-                    switch (state)
+                    switch (clients[clientIndex].getState())
                     {
                         case PASSWORD_REQUIRED:
                             if (message.rfind("PASS", 0) == 0)
@@ -134,21 +156,21 @@ void Server::server(int ac, char **av)
                                     continue;
                                 else if (receivedPassword == pwd)
                                 {
-                                    std::cout << "Client connected: " << clients.getClientSocket() << std::endl;
+                                    std::cout << "Client connected: " << clients[clientIndex].getClientSocket() << std::endl;
                                     std::string successMsg = "Password accepted. Welcome to the server.\n";
                                     send(events[i].data.fd, successMsg.c_str(), successMsg.size(), 0);
-                                    state = NICK_REQUIRED;
+                                    clients[clientIndex].setState(NICK_REQUIRED);
                                 }
                                 else
                                 {
-                                    std::cout <<  clients.getClientSocket() << " :Password incorrect" << std::endl;
+                                    std::cout <<  clients[clientIndex].getClientSocket() << " :Password incorrect" << std::endl;
                                     std::string errorMsg = "Password incorrect\n";
                                     send(events[i].data.fd, errorMsg.c_str(), errorMsg.size(), 0);
                                 }
                             }
                             else
                             {
-                                std::cout << "Client " << clients.getClientSocket() << " :Password required" << std::endl;
+                                std::cout << "Client " << clients[clientIndex].getClientSocket() << " :Password required" << std::endl;
                                 std::string errorMsg = "Password required\n";
                                 send(events[i].data.fd, errorMsg.c_str(), errorMsg.size(), 0);
                             }
@@ -162,25 +184,47 @@ void Server::server(int ac, char **av)
                                     continue;
                                 else if (!isValidNick(receivedNick))
                                 {
-                                    std::cout << "Client " << clients.getClientSocket() << " " << receivedNick <<" :Invalid nickname" << std::endl;
+                                    std::cout << "Client " << clients[clientIndex].getClientSocket() << " " << receivedNick <<" :Invalid nickname" << std::endl;
                                     std::string errorMsg = "Invalid nickname\n";
                                     send(events[i].data.fd, errorMsg.c_str(), errorMsg.size(), 0);
                                 }
                                 else
                                 {
-                                    std::cout << "Client " << clients.getClientSocket() << " set nickname to: " << receivedNick << std::endl;
+                                    std::cout << "Client " << clients[clientIndex].getClientSocket() << " set nickname to: " << receivedNick << std::endl;
                                     std::string successMsg = "Nickname set to " + receivedNick + "\n";
                                     send(events[i].data.fd, successMsg.c_str(), successMsg.size(), 0);
-                                    state = USER_REQUIRED;
+                                    clients[clientIndex].setState(USER_REQUIRED);
                                 }
                             }
                             else
                             {
-                                std::cout << "Client " << clients.getClientSocket() << " :Nickname required" << std::endl;
+                                std::cout << "Client " << clients[clientIndex].getClientSocket() << " :Nickname required" << std::endl;
                                 std::string errorMsg = "Nickname required\n";
                                 send(events[i].data.fd, errorMsg.c_str(), errorMsg.size(), 0);
                             }
                             break;
+                        // case USER_REQUIRED:
+                        //     if (message.rfind("USER", 0) == 0)
+                        //     {
+                        //         std::string receivedUser = message.substr(5);
+                        //         trim(receivedUser);
+                        //         if (ERR_NEEDMOREPARAMS(message, events[i].data.fd))
+                        //             continue;
+                        //         else
+                        //         {
+                        //             std::cout << "Client " << clients.getClientSocket() << " set user to: " << receivedUser << std::endl;
+                        //             std::string successMsg = "User set to " + receivedUser + "\n";
+                        //             send(events[i].data.fd, successMsg.c_str(), successMsg.size(), 0);
+                        //             state = READY;
+                        //         }
+                        //     }
+                        //     else
+                        //     {
+                        //         std::cout << "Client " << clients.getClientSocket() << " :User required" << std::endl;
+                        //         std::string errorMsg = "User required\n";
+                        //         send(events[i].data.fd, errorMsg.c_str(), errorMsg.size(), 0);
+                        //     }
+                        //     break;
                         default:
                             break;
                     }

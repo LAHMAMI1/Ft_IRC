@@ -6,13 +6,14 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/20 09:55:28 by olahmami          #+#    #+#             */
-/*   Updated: 2024/07/12 14:51:35 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/10/06 16:52:37 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 #include "libs.hpp"
+#include "Client.hpp"
 
 class Server
 {
@@ -28,6 +29,7 @@ class Server
         char buffer[1024];
         int bytesReceived;
         std::string pwd;
+        int clientIndex;
 
     public:
         void server(int ac, char **av);
