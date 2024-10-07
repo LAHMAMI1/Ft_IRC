@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/20 11:59:09 by olahmami          #+#    #+#             */
-/*   Updated: 2024/10/06 16:52:31 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/10/07 19:46:26 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,10 +107,8 @@ void Server::server(int ac, char **av)
 
                 if (clientIndex == -1)
                     throw std::runtime_error("No available slot for new client");
-                    
-                std::cout << "New client " << clientIndex << " connected: " << clients[clientIndex].getClientSocket() << std::endl;
+
                 clients[clientIndex].setClientSocket(clientSocket);
-                std::cout << "New client " << clientIndex << " connected: " << clients[clientIndex].getClientSocket() << std::endl;
                 
                 // Set the client socket to non-blocking mode
                 if (fcntl(clientSocket, F_SETFL, O_NONBLOCK) < 0)
@@ -118,8 +116,6 @@ void Server::server(int ac, char **av)
                 
                 std::string passwordRequest = "ENTER SERVER PASSWORD:\n";
                 send(clientSocket, passwordRequest.c_str(), passwordRequest.size(), 0);
-
-                std::cout << "Waiting the password from client: " << clientSocket << std::endl;
 
                 // Add the client socket to the epoll instance
                 evServer.events = EPOLLIN | EPOLLET;
@@ -144,41 +140,42 @@ void Server::server(int ac, char **av)
                 else
                 {
                     std::string message(buffer);
+                    std::string receivedPassword;
+                    std::string receivedNick;
 
                     switch (clients[clientIndex].getState())
                     {
                         case PASSWORD_REQUIRED:
-                            if (message.rfind("PASS", 0) == 0)
+                            // If the message is not a PASS command, ignore it
+                            if (message.rfind("PASS", 0) != 0)
                             {
-                                std::string receivedPassword = message.substr(5);
-                                trim(receivedPassword);
-                                if (ERR_NEEDMOREPARAMS(message, events[i].data.fd))
-                                    continue;
-                                else if (receivedPassword == pwd)
-                                {
-                                    std::cout << "Client connected: " << clients[clientIndex].getClientSocket() << std::endl;
-                                    std::string successMsg = "Password accepted. Welcome to the server.\n";
-                                    send(events[i].data.fd, successMsg.c_str(), successMsg.size(), 0);
-                                    clients[clientIndex].setState(NICK_REQUIRED);
-                                }
-                                else
-                                {
-                                    std::cout <<  clients[clientIndex].getClientSocket() << " :Password incorrect" << std::endl;
-                                    std::string errorMsg = "Password incorrect\n";
-                                    send(events[i].data.fd, errorMsg.c_str(), errorMsg.size(), 0);
-                                }
+                                std::cout << "Waiting for password from client: " << clients[clientIndex].getClientSocket() << std::endl;
+                                continue;
+                            }
+                            
+                            receivedPassword = message.substr(5);
+                            trim(receivedPassword);
+                            if (ERR_NEEDMOREPARAMS(message, events[i].data.fd))
+                                continue;
+                            else if (receivedPassword == pwd)
+                            {
+                                std::cout << "Client connected: " << clients[clientIndex].getClientSocket() << std::endl;
+                                std::string successMsg = "Password accepted. Welcome to the server.\n";
+                                send(events[i].data.fd, successMsg.c_str(), successMsg.size(), 0);
+                                clients[clientIndex].setState(NICK_REQUIRED);
                             }
                             else
                             {
-                                std::cout << "Client " << clients[clientIndex].getClientSocket() << " :Password required" << std::endl;
-                                std::string errorMsg = "Password required\n";
+                                std::cout <<  clients[clientIndex].getClientSocket() << " :Password incorrect" << std::endl;
+                                std::string errorMsg = "Password incorrect\n";
                                 send(events[i].data.fd, errorMsg.c_str(), errorMsg.size(), 0);
                             }
                             break;
+                            
                         case NICK_REQUIRED:
                             if (message.rfind("NICK", 0) == 0)
                             {
-                                std::string receivedNick = message.substr(5);
+                                receivedNick = message.substr(5);
                                 trim(receivedNick);
                                 if (ERR_NEEDMOREPARAMS(message, events[i].data.fd))
                                     continue;
@@ -228,8 +225,6 @@ void Server::server(int ac, char **av)
                         default:
                             break;
                     }
-
-                    
                 }
             }
         }
