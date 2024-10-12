@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/21 14:21:37 by olahmami          #+#    #+#             */
-/*   Updated: 2024/07/12 14:57:02 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/10/12 19:35:05 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,7 @@ void closeIfNot(int fd)
         close(fd);
 }
 
-bool ERR_NEEDMOREPARAMS(const std::string& message, int clientSocket)
+bool ERR_NEEDMOREPARAMS(const std::string& message, int clientSocket, long unsigned int numParams)
 {
     std::istringstream iss(message);
     std::vector<std::string> split_message;
@@ -46,10 +46,12 @@ bool ERR_NEEDMOREPARAMS(const std::string& message, int clientSocket)
     while (iss >> word)
         split_message.push_back(word);
     
-    if (split_message.size() < 2)
+    if (split_message.size() < numParams)
     {
         std::cout << clientSocket << " " << split_message[0] << " :Not enough parameters"<< std::endl;
-        std::string errorMsg = "Not enough parameters\n";
+        std::ostringstream oss;
+        oss << "Not enough parameters:\nNeed " << numParams << " parameters\n";
+        std::string errorMsg = oss.str();
         send(clientSocket, errorMsg.c_str(), errorMsg.size(), 0);
         return true;
     }
@@ -67,3 +69,24 @@ bool isValidNick(const std::string& receivedNick)
     }
     return true;
 }
+
+// bool 
+
+// bool isValidUser(const std::string& receivedUser)
+// {
+//     std::istringstream iss(receivedUser);
+//     std::vector<std::string> split_user;
+//     std::string word;
+
+//     while (iss >> word)
+//         split_user.push_back(word);
+
+//     int i = 0;
+//     while (split_user[0][i] != '\0')
+//     {
+//         if (!isalpha(split_user[0][i]) || !)
+//             return false;
+//         i++;
+//     }
+    
+// }

@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/20 11:59:09 by olahmami          #+#    #+#             */
-/*   Updated: 2024/10/07 19:46:26 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/10/12 19:35:01 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -142,6 +142,7 @@ void Server::server(int ac, char **av)
                     std::string message(buffer);
                     std::string receivedPassword;
                     std::string receivedNick;
+                    std::string receivedUser;
 
                     switch (clients[clientIndex].getState())
                     {
@@ -155,7 +156,7 @@ void Server::server(int ac, char **av)
                             
                             receivedPassword = message.substr(5);
                             trim(receivedPassword);
-                            if (ERR_NEEDMOREPARAMS(message, events[i].data.fd))
+                            if (ERR_NEEDMOREPARAMS(message, events[i].data.fd, 2))
                                 continue;
                             else if (receivedPassword == pwd)
                             {
@@ -177,7 +178,7 @@ void Server::server(int ac, char **av)
                             {
                                 receivedNick = message.substr(5);
                                 trim(receivedNick);
-                                if (ERR_NEEDMOREPARAMS(message, events[i].data.fd))
+                                if (ERR_NEEDMOREPARAMS(message, events[i].data.fd, 2))
                                     continue;
                                 else if (!isValidNick(receivedNick))
                                 {
@@ -200,28 +201,35 @@ void Server::server(int ac, char **av)
                                 send(events[i].data.fd, errorMsg.c_str(), errorMsg.size(), 0);
                             }
                             break;
-                        // case USER_REQUIRED:
-                        //     if (message.rfind("USER", 0) == 0)
-                        //     {
-                        //         std::string receivedUser = message.substr(5);
-                        //         trim(receivedUser);
-                        //         if (ERR_NEEDMOREPARAMS(message, events[i].data.fd))
-                        //             continue;
-                        //         else
-                        //         {
-                        //             std::cout << "Client " << clients.getClientSocket() << " set user to: " << receivedUser << std::endl;
-                        //             std::string successMsg = "User set to " + receivedUser + "\n";
-                        //             send(events[i].data.fd, successMsg.c_str(), successMsg.size(), 0);
-                        //             state = READY;
-                        //         }
-                        //     }
-                        //     else
-                        //     {
-                        //         std::cout << "Client " << clients.getClientSocket() << " :User required" << std::endl;
-                        //         std::string errorMsg = "User required\n";
-                        //         send(events[i].data.fd, errorMsg.c_str(), errorMsg.size(), 0);
-                        //     }
-                        //     break;
+
+                        case USER_REQUIRED:
+                            if (message.rfind("USER", 0) == 0)
+                            {
+                                receivedUser = message.substr(5);
+                                trim(receivedUser);
+                                if (ERR_NEEDMOREPARAMS(message, events[i].data.fd, 5))
+                                    continue;
+                                // else if (isValidUser(receivedUser))
+                                // {
+                                //     std::cout << "Client " << clients[clientIndex].getClientSocket() << " " << receivedUser << " :Invalid user" << std::endl;
+                                //     std::string errorMsg = "Invalid user\n";
+                                //     send(events[i].data.fd, errorMsg.c_str(), errorMsg.size(), 0);
+                                // }
+                                else
+                                {
+                                    std::cout << "Client " << clients[clientIndex].getClientSocket() << " set user to: " << receivedUser << std::endl;
+                                    std::string successMsg = "User set to " + receivedUser + "\n";
+                                    send(events[i].data.fd, successMsg.c_str(), successMsg.size(), 0);
+                                    clients[clientIndex].setState(READY);
+                                }
+                            }
+                            else
+                            {
+                                std::cout << "Client " << clients[clientIndex].getClientSocket() << " :User required" << std::endl;
+                                std::string errorMsg = "User required\n";
+                                send(events[i].data.fd, errorMsg.c_str(), errorMsg.size(), 0);
+                            }
+                            break;
                         default:
                             break;
                     }

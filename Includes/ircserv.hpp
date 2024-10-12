@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/03 18:21:28 by olahmami          #+#    #+#             */
-/*   Updated: 2024/07/12 14:56:43 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/10/12 19:35:12 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,5 +18,6 @@
 void    sigHandler(int signum);
 std::string trim(std::string& trimmedStr);
 void closeIfNot(int fd);
-bool ERR_NEEDMOREPARAMS(const std::string& message, int clientSocket);
+bool ERR_NEEDMOREPARAMS(const std::string& message, int clientSocket, long unsigned int numParams);
 bool isValidNick(const std::string& receivedNick);
+// bool isValidUser(const std::string& receivedUser);
