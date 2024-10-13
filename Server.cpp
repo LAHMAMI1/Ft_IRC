@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/20 11:59:09 by olahmami          #+#    #+#             */
-/*   Updated: 2024/10/12 19:35:01 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/10/13 12:45:30 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -191,6 +191,7 @@ void Server::server(int ac, char **av)
                                     std::cout << "Client " << clients[clientIndex].getClientSocket() << " set nickname to: " << receivedNick << std::endl;
                                     std::string successMsg = "Nickname set to " + receivedNick + "\n";
                                     send(events[i].data.fd, successMsg.c_str(), successMsg.size(), 0);
+                                    clients[clientIndex].setNickName(receivedNick);
                                     clients[clientIndex].setState(USER_REQUIRED);
                                 }
                             }
@@ -209,17 +210,25 @@ void Server::server(int ac, char **av)
                                 trim(receivedUser);
                                 if (ERR_NEEDMOREPARAMS(message, events[i].data.fd, 5))
                                     continue;
-                                // else if (isValidUser(receivedUser))
-                                // {
-                                //     std::cout << "Client " << clients[clientIndex].getClientSocket() << " " << receivedUser << " :Invalid user" << std::endl;
-                                //     std::string errorMsg = "Invalid user\n";
-                                //     send(events[i].data.fd, errorMsg.c_str(), errorMsg.size(), 0);
-                                // }
+                                else if (!isValidUser(receivedUser))
+                                {
+                                    std::cout << "Client " << clients[clientIndex].getClientSocket() << " " << receivedUser << " :Invalid user" << std::endl;
+                                    std::string errorMsg = "Invalid user\n";
+                                    send(events[i].data.fd, errorMsg.c_str(), errorMsg.size(), 0);
+                                }
                                 else
                                 {
-                                    std::cout << "Client " << clients[clientIndex].getClientSocket() << " set user to: " << receivedUser << std::endl;
-                                    std::string successMsg = "User set to " + receivedUser + "\n";
+                                    std::istringstream iss(receivedUser);
+                                    std::vector<std::string> split_user;
+                                    std::string part;
+                                    while (iss >> part)
+                                        split_user.push_back(part);
+                                    std::cout << "Client " << clients[clientIndex].getClientSocket() << " set user to: " << split_user[0] << std::endl;
+                                    std::string successMsg = "User set to " + split_user[0] + "\n";
                                     send(events[i].data.fd, successMsg.c_str(), successMsg.size(), 0);
+                                    clients[clientIndex].setUserName(split_user[0]);
+                                    clients[clientIndex].setRealName(split_user[3]);
+                                    clients[clientIndex].setIsRegistered(true);
                                     clients[clientIndex].setState(READY);
                                 }
                             }

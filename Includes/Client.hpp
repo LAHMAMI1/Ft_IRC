@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/20 10:06:30 by olahmami          #+#    #+#             */
-/*   Updated: 2024/10/07 18:59:07 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/10/13 12:30:35 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,10 @@ class Client
     private:
         int clientSocket;
         ClientState state;
+        std::string nickName;
+        std::string userName;
+        std::string realName;
+        bool isRegistered;
 
     public:
         // Constructors
@@ -31,4 +35,12 @@ class Client
         int getClientSocket() const;
         void setState(ClientState state);
         ClientState getState() const;
+        void setNickName(std::string const& nickName);
+        std::string getNickName() const;
+        void setUserName(std::string const& userName);
+        std::string getUserName() const;
+        void setRealName(std::string const& realName);
+        std::string getRealName() const;
+        void setIsRegistered(bool const& isRegistered);
+        bool getIsRegistered() const;
 };
