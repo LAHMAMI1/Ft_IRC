@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/20 11:59:09 by olahmami          #+#    #+#             */
-/*   Updated: 2024/10/13 12:45:30 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/10/16 21:13:37 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -137,7 +137,7 @@ void Server::server(int ac, char **av)
                     epoll_ctl(epollSocket, EPOLL_CTL_DEL, events[i].data.fd, NULL);
                     closeIfNot(events[i].data.fd);
                 }
-                else
+                else if (clients[clientIndex].getIsRegistered() == false)
                 {
                     std::string message(buffer);
                     std::string receivedPassword;
@@ -229,7 +229,6 @@ void Server::server(int ac, char **av)
                                     clients[clientIndex].setUserName(split_user[0]);
                                     clients[clientIndex].setRealName(split_user[3]);
                                     clients[clientIndex].setIsRegistered(true);
-                                    clients[clientIndex].setState(READY);
                                 }
                             }
                             else
@@ -239,8 +238,22 @@ void Server::server(int ac, char **av)
                                 send(events[i].data.fd, errorMsg.c_str(), errorMsg.size(), 0);
                             }
                             break;
-                        default:
-                            break;
+                    }
+                }
+                else
+                {
+                    // Process the message
+                    std::string message(buffer);
+                    if (message.rfind("PASS", 0) == 0 || message.rfind("NICK", 0) == 0 || message.rfind("USER", 0) == 0)
+                    {
+                    std::cout << "Client " << clients[clientIndex].getClientSocket() << " sent: " << message << std::endl;
+                        std::cout << "Client " << clients[clientIndex].getClientSocket() << " :Already Registred\nYou can go now for channels" << std::endl;
+                        std::string errorMsg = "Already Registred\nYou can go now for channels\n";
+                        send(events[i].data.fd, errorMsg.c_str(), errorMsg.size(), 0);
+                    }
+                    else
+                    {
+                        std::cout << "Client " << clients[clientIndex].getClientSocket() << " sent: " << message << std::endl;
                     }
                 }
             }

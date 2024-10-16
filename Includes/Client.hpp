@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/20 10:06:30 by olahmami          #+#    #+#             */
-/*   Updated: 2024/10/13 12:30:35 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/10/16 19:24:34 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 #include "libs.hpp"
 
-enum ClientState { PASSWORD_REQUIRED, NICK_REQUIRED, USER_REQUIRED, READY };
+enum ClientState { PASSWORD_REQUIRED, NICK_REQUIRED, USER_REQUIRED };
 
 class Client
 {
