@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/20 11:59:09 by olahmami          #+#    #+#             */
-/*   Updated: 2024/10/16 21:13:37 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/10/20 12:26:27 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,9 +14,9 @@
 
 bool isShutdown = false;
 
-void Server::server(int ac, char **av)
+void Server::serverInit(int ac, char **av)
 {
-     // Check if the correct number of arguments is provided
+    // Check if the correct number of arguments is provided
     if (ac != 3)
         throw std::invalid_argument("Usage: ./ircserv <port> <password>");
 
@@ -66,11 +66,17 @@ void Server::server(int ac, char **av)
     // Set the maximum number of events to be returned by epoll_wait
     maxEvents = 9;
     events.resize(maxEvents);
+}
+
+void Server::server(int ac, char **av)
+{
+    // Initialize the server
+    serverInit(ac, av);
 
     // Set the clients number
     std::vector<Client> clients(maxEvents);
 
-    while (isShutdown == false) 
+    while (isShutdown == false)
     {
         // Wait for events to occur
         numEvents = epoll_wait(epollSocket, events.data(), maxEvents, -1);
@@ -140,103 +146,19 @@ void Server::server(int ac, char **av)
                 else if (clients[clientIndex].getIsRegistered() == false)
                 {
                     std::string message(buffer);
-                    std::string receivedPassword;
-                    std::string receivedNick;
-                    std::string receivedUser;
 
                     switch (clients[clientIndex].getState())
                     {
                         case PASSWORD_REQUIRED:
-                            // If the message is not a PASS command, ignore it
-                            if (message.rfind("PASS", 0) != 0)
-                            {
-                                std::cout << "Waiting for password from client: " << clients[clientIndex].getClientSocket() << std::endl;
-                                continue;
-                            }
-                            
-                            receivedPassword = message.substr(5);
-                            trim(receivedPassword);
-                            if (ERR_NEEDMOREPARAMS(message, events[i].data.fd, 2))
-                                continue;
-                            else if (receivedPassword == pwd)
-                            {
-                                std::cout << "Client connected: " << clients[clientIndex].getClientSocket() << std::endl;
-                                std::string successMsg = "Password accepted. Welcome to the server.\n";
-                                send(events[i].data.fd, successMsg.c_str(), successMsg.size(), 0);
-                                clients[clientIndex].setState(NICK_REQUIRED);
-                            }
-                            else
-                            {
-                                std::cout <<  clients[clientIndex].getClientSocket() << " :Password incorrect" << std::endl;
-                                std::string errorMsg = "Password incorrect\n";
-                                send(events[i].data.fd, errorMsg.c_str(), errorMsg.size(), 0);
-                            }
+                            passCommand(message, clientIndex, clients, events.data(), i);
                             break;
-                            
+
                         case NICK_REQUIRED:
-                            if (message.rfind("NICK", 0) == 0)
-                            {
-                                receivedNick = message.substr(5);
-                                trim(receivedNick);
-                                if (ERR_NEEDMOREPARAMS(message, events[i].data.fd, 2))
-                                    continue;
-                                else if (!isValidNick(receivedNick))
-                                {
-                                    std::cout << "Client " << clients[clientIndex].getClientSocket() << " " << receivedNick <<" :Invalid nickname" << std::endl;
-                                    std::string errorMsg = "Invalid nickname\n";
-                                    send(events[i].data.fd, errorMsg.c_str(), errorMsg.size(), 0);
-                                }
-                                else
-                                {
-                                    std::cout << "Client " << clients[clientIndex].getClientSocket() << " set nickname to: " << receivedNick << std::endl;
-                                    std::string successMsg = "Nickname set to " + receivedNick + "\n";
-                                    send(events[i].data.fd, successMsg.c_str(), successMsg.size(), 0);
-                                    clients[clientIndex].setNickName(receivedNick);
-                                    clients[clientIndex].setState(USER_REQUIRED);
-                                }
-                            }
-                            else
-                            {
-                                std::cout << "Client " << clients[clientIndex].getClientSocket() << " :Nickname required" << std::endl;
-                                std::string errorMsg = "Nickname required\n";
-                                send(events[i].data.fd, errorMsg.c_str(), errorMsg.size(), 0);
-                            }
+                            nickCommand(message, clientIndex, clients, events.data(), i);
                             break;
 
                         case USER_REQUIRED:
-                            if (message.rfind("USER", 0) == 0)
-                            {
-                                receivedUser = message.substr(5);
-                                trim(receivedUser);
-                                if (ERR_NEEDMOREPARAMS(message, events[i].data.fd, 5))
-                                    continue;
-                                else if (!isValidUser(receivedUser))
-                                {
-                                    std::cout << "Client " << clients[clientIndex].getClientSocket() << " " << receivedUser << " :Invalid user" << std::endl;
-                                    std::string errorMsg = "Invalid user\n";
-                                    send(events[i].data.fd, errorMsg.c_str(), errorMsg.size(), 0);
-                                }
-                                else
-                                {
-                                    std::istringstream iss(receivedUser);
-                                    std::vector<std::string> split_user;
-                                    std::string part;
-                                    while (iss >> part)
-                                        split_user.push_back(part);
-                                    std::cout << "Client " << clients[clientIndex].getClientSocket() << " set user to: " << split_user[0] << std::endl;
-                                    std::string successMsg = "User set to " + split_user[0] + "\n";
-                                    send(events[i].data.fd, successMsg.c_str(), successMsg.size(), 0);
-                                    clients[clientIndex].setUserName(split_user[0]);
-                                    clients[clientIndex].setRealName(split_user[3]);
-                                    clients[clientIndex].setIsRegistered(true);
-                                }
-                            }
-                            else
-                            {
-                                std::cout << "Client " << clients[clientIndex].getClientSocket() << " :User required" << std::endl;
-                                std::string errorMsg = "User required\n";
-                                send(events[i].data.fd, errorMsg.c_str(), errorMsg.size(), 0);
-                            }
+                            userCommand(message, clientIndex, clients, events.data(), i);
                             break;
                     }
                 }
@@ -246,13 +168,13 @@ void Server::server(int ac, char **av)
                     std::string message(buffer);
                     if (message.rfind("PASS", 0) == 0 || message.rfind("NICK", 0) == 0 || message.rfind("USER", 0) == 0)
                     {
-                    std::cout << "Client " << clients[clientIndex].getClientSocket() << " sent: " << message << std::endl;
                         std::cout << "Client " << clients[clientIndex].getClientSocket() << " :Already Registred\nYou can go now for channels" << std::endl;
                         std::string errorMsg = "Already Registred\nYou can go now for channels\n";
                         send(events[i].data.fd, errorMsg.c_str(), errorMsg.size(), 0);
                     }
-                    else
+                    else if (message.rfind("JOIN", 0) == 0)
                     {
+                        
                         std::cout << "Client " << clients[clientIndex].getClientSocket() << " sent: " << message << std::endl;
                     }
                 }
