@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/20 11:59:09 by olahmami          #+#    #+#             */
-/*   Updated: 2024/10/20 12:26:27 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/10/22 22:09:37 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -174,7 +174,22 @@ void Server::server(int ac, char **av)
                     }
                     else if (message.rfind("JOIN", 0) == 0)
                     {
-                        
+                        std::string channelName = message.substr(5);
+                        trim(channelName);
+                        if (ERR_NEEDMOREPARAMS(message, events[i].data.fd, 2))
+                            return;
+                        else if (channelName[0] != '#')
+                        {
+                            std::cout << "Client " << clients[clientIndex].getClientSocket() << " :Invalid channel name" << std::endl;
+                            std::string errorMsg = "Invalid channel name\n";
+                            send(events[i].data.fd, errorMsg.c_str(), errorMsg.size(), 0);
+                        }
+                        else
+                        {
+                            std::cout << "Client " << clients[clientIndex].getClientSocket() << " joined channel: " << channelName << std::endl;
+                            std::string successMsg = "Joined channel " + channelName + "\n";
+                            send(events[i].data.fd, successMsg.c_str(), successMsg.size(), 0);
+                        }
                         std::cout << "Client " << clients[clientIndex].getClientSocket() << " sent: " << message << std::endl;
                     }
                 }
