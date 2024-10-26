@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/20 10:06:30 by olahmami          #+#    #+#             */
-/*   Updated: 2024/10/16 19:24:34 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/10/26 15:44:51 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@ class Client
         std::string userName;
         std::string realName;
         bool isRegistered;
+        bool isOperator;
 
     public:
         // Constructors
@@ -43,4 +44,6 @@ class Client
         std::string getRealName() const;
         void setIsRegistered(bool const& isRegistered);
         bool getIsRegistered() const;
+        void setIsOperator(bool const& isOperator);
+        bool getIsOperator() const;
 };

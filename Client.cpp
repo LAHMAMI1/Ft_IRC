@@ -6,13 +6,13 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/20 12:38:13 by olahmami          #+#    #+#             */
-/*   Updated: 2024/10/13 12:30:40 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/10/26 15:45:01 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Includes/ircserv.hpp"
 
-Client::Client() : clientSocket(-1), state(PASSWORD_REQUIRED), isRegistered(false) {}
+Client::Client() : clientSocket(-1), state(PASSWORD_REQUIRED), isRegistered(false), isOperator(false) {}
 
 void Client::setClientSocket(int const& clientSocket) { this->clientSocket = clientSocket; }
 
@@ -37,3 +37,7 @@ std::string Client::getRealName() const { return realName; }
 void Client::setIsRegistered(bool const& isRegistered) { this->isRegistered = isRegistered; }
 
 bool Client::getIsRegistered() const { return isRegistered; }
+
+void Client::setIsOperator(bool const& isOperator) { this->isOperator = isOperator; }
+
+bool Client::getIsOperator() const { return isOperator; }

@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/20 11:59:09 by olahmami          #+#    #+#             */
-/*   Updated: 2024/10/22 22:09:37 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/10/26 16:39:15 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,6 +75,9 @@ void Server::server(int ac, char **av)
 
     // Set the clients number
     std::vector<Client> clients(maxEvents);
+    
+    // Channel name -> set of client sockets
+    std::map< std::string, std::set<int> > channels;
 
     while (isShutdown == false)
     {
@@ -143,6 +146,7 @@ void Server::server(int ac, char **av)
                     epoll_ctl(epollSocket, EPOLL_CTL_DEL, events[i].data.fd, NULL);
                     closeIfNot(events[i].data.fd);
                 }
+                // Authentication process
                 else if (clients[clientIndex].getIsRegistered() == false)
                 {
                     std::string message(buffer);
@@ -164,7 +168,6 @@ void Server::server(int ac, char **av)
                 }
                 else
                 {
-                    // Process the message
                     std::string message(buffer);
                     if (message.rfind("PASS", 0) == 0 || message.rfind("NICK", 0) == 0 || message.rfind("USER", 0) == 0)
                     {
@@ -172,13 +175,14 @@ void Server::server(int ac, char **av)
                         std::string errorMsg = "Already Registred\nYou can go now for channels\n";
                         send(events[i].data.fd, errorMsg.c_str(), errorMsg.size(), 0);
                     }
+                    // Channels process
                     else if (message.rfind("JOIN", 0) == 0)
                     {
                         std::string channelName = message.substr(5);
                         trim(channelName);
                         if (ERR_NEEDMOREPARAMS(message, events[i].data.fd, 2))
                             return;
-                        else if (channelName[0] != '#')
+                        else if (channelName[0] != '#' || channelName.find(",") != std::string::npos)
                         {
                             std::cout << "Client " << clients[clientIndex].getClientSocket() << " :Invalid channel name" << std::endl;
                             std::string errorMsg = "Invalid channel name\n";
@@ -186,11 +190,28 @@ void Server::server(int ac, char **av)
                         }
                         else
                         {
-                            std::cout << "Client " << clients[clientIndex].getClientSocket() << " joined channel: " << channelName << std::endl;
-                            std::string successMsg = "Joined channel " + channelName + "\n";
-                            send(events[i].data.fd, successMsg.c_str(), successMsg.size(), 0);
+                            // Create a new channel if it does not exist
+                            if (channels.find(channelName) == channels.end())
+                            {
+                                std::set<int> clientSockets;
+                                clients[clientIndex].setIsOperator(true);
+                                clientSockets.insert(clients[clientIndex].getClientSocket());
+                                channels.insert(std::pair< std::string, std::set<int> >(channelName, clientSockets));
+                                std::cout << "Client " << clients[clientIndex].getNickName() << " created channel: " << channelName << std::endl;
+                                std::cout << "Client " << clients[clientIndex].getNickName() << " joined channel: " << channelName << std::endl;
+                                std::cout << "Client " << clients[clientIndex].getNickName() << " is operator in channel: " << channelName << std::endl;
+                                std::string successMsg = "Channel " + channelName + " created and joined" + " as operator\n";
+                                send(events[i].data.fd, successMsg.c_str(), successMsg.size(), 0);
+                            }
+                            // Insert the client socket into the channel if it exists
+                            else
+                            {
+                                channels[channelName].insert(clients[clientIndex].getClientSocket());
+                                std::cout << "Client " << clients[clientIndex].getNickName() << " joined channel: " << channelName << std::endl;
+                                std::string successMsg = "Channel " + channelName + " joined\n";
+                                send(events[i].data.fd, successMsg.c_str(), successMsg.size(), 0);
+                            }
                         }
-                        std::cout << "Client " << clients[clientIndex].getClientSocket() << " sent: " << message << std::endl;
                     }
                 }
             }
