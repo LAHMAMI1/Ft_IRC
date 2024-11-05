@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/20 11:59:09 by olahmami          #+#    #+#             */
-/*   Updated: 2024/10/26 16:39:15 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/11/05 18:46:24 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -118,11 +118,11 @@ void Server::server(int ac, char **av)
                     throw std::runtime_error("No available slot for new client");
 
                 clients[clientIndex].setClientSocket(clientSocket);
-                
+
                 // Set the client socket to non-blocking mode
                 if (fcntl(clientSocket, F_SETFL, O_NONBLOCK) < 0)
                     throw std::runtime_error("Failed to set non-blocking mode for the client socket");
-                
+
                 std::string passwordRequest = "ENTER SERVER PASSWORD:\n";
                 send(clientSocket, passwordRequest.c_str(), passwordRequest.size(), 0);
 
@@ -150,6 +150,16 @@ void Server::server(int ac, char **av)
                 else if (clients[clientIndex].getIsRegistered() == false)
                 {
                     std::string message(buffer);
+                    size_t newlinePos = message.find_first_of("\r\n");
+                    if (newlinePos != std::string::npos)
+                    {
+                        std::string firstPart = message.substr(0, newlinePos);
+                        std::string secondPart = message.substr(newlinePos + 2);
+                        secondPart.erase(std::remove(secondPart.begin(), secondPart.end(), '\r'), secondPart.end());
+                        secondPart.erase(std::remove(secondPart.begin(), secondPart.end(), '\n'), secondPart.end());
+                        std::cout << "First part: [" << firstPart << "]" << std::endl;
+                        std::cout << "Second part: [" << secondPart << "]" << std::endl;
+                    }
 
                     switch (clients[clientIndex].getState())
                     {
@@ -171,16 +181,15 @@ void Server::server(int ac, char **av)
                     std::string message(buffer);
                     if (message.rfind("PASS", 0) == 0 || message.rfind("NICK", 0) == 0 || message.rfind("USER", 0) == 0)
                     {
-                        std::cout << "Client " << clients[clientIndex].getClientSocket() << " :Already Registred\nYou can go now for channels" << std::endl;
-                        std::string errorMsg = "Already Registred\nYou can go now for channels\n";
-                        send(events[i].data.fd, errorMsg.c_str(), errorMsg.size(), 0);
+                        std::string errorMsg = ERR_ALREADYREGISTERED(intToString(clients[clientIndex].getClientSocket()));
+                        send(clients[clientIndex].getClientSocket(), errorMsg.c_str(), errorMsg.size(), 0);
                     }
                     // Channels process
                     else if (message.rfind("JOIN", 0) == 0)
                     {
                         std::string channelName = message.substr(5);
                         trim(channelName);
-                        if (ERR_NEEDMOREPARAMS(message, events[i].data.fd, 2))
+                        if (NEEDMOREPARAMS(message, events[i].data.fd, 2))
                             return;
                         else if (channelName[0] != '#' || channelName.find(",") != std::string::npos)
                         {

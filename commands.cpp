@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 11:37:17 by olahmami          #+#    #+#             */
-/*   Updated: 2024/10/20 12:08:42 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/11/05 18:28:05 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ void Server::passCommand(std::string message, int clientIndex, std::vector<Clien
 
     receivedPassword = message.substr(5);
     trim(receivedPassword);
-    if (ERR_NEEDMOREPARAMS(message, events[i].data.fd, 2))
+    if (NEEDMOREPARAMS(message, events[i].data.fd, 2))
         return;
     else if (receivedPassword == pwd)
     {
@@ -35,9 +35,8 @@ void Server::passCommand(std::string message, int clientIndex, std::vector<Clien
     }
     else
     {
-        std::cout <<  clients[clientIndex].getClientSocket() << " :Password incorrect" << std::endl;
-        std::string errorMsg = "Password incorrect\n";
-        send(events[i].data.fd, errorMsg.c_str(), errorMsg.size(), 0);
+        std::string errorMsg = ERR_PASSWDMISMATCH(intToString(events[i].data.fd));
+        send(events[i].data.fd, errorMsg.c_str(), errorMsg.length(), 0);
     }
 }
 
@@ -49,12 +48,13 @@ void Server::nickCommand(std::string message, int clientIndex, std::vector<Clien
     {
         receivedNick = message.substr(5);
         trim(receivedNick);
-        if (ERR_NEEDMOREPARAMS(message, events[i].data.fd, 2))
+        if (NICKNAMEINUSE(receivedNick, clients, events[i].data.fd))
+            return;
+        if (NEEDMOREPARAMS(message, events[i].data.fd, 2))
             return;
         else if (!isValidNick(receivedNick))
         {
-            std::cout << "Client " << clients[clientIndex].getClientSocket() << " " << receivedNick <<" :Invalid nickname" << std::endl;
-            std::string errorMsg = "Invalid nickname\n";
+            std::string errorMsg = ERR_ERRONEUSNICKNAME(intToString(events[i].data.fd), receivedNick);
             send(events[i].data.fd, errorMsg.c_str(), errorMsg.size(), 0);
         }
         else
@@ -68,8 +68,7 @@ void Server::nickCommand(std::string message, int clientIndex, std::vector<Clien
     }
     else
     {
-        std::cout << "Client " << clients[clientIndex].getClientSocket() << " :Nickname required" << std::endl;
-        std::string errorMsg = "Nickname required\n";
+        std::string errorMsg = ERR_NONICKNAMEGIVEN(intToString(events[i].data.fd));
         send(events[i].data.fd, errorMsg.c_str(), errorMsg.size(), 0);
     }
 }
@@ -82,7 +81,7 @@ void Server::userCommand(std::string message, int clientIndex, std::vector<Clien
     {
         receivedUser = message.substr(5);
         trim(receivedUser);
-        if (ERR_NEEDMOREPARAMS(message, events[i].data.fd, 5))
+        if (NEEDMOREPARAMS(message, events[i].data.fd, 5))
             return;
         else if (!isValidUser(receivedUser))
         {
@@ -98,8 +97,7 @@ void Server::userCommand(std::string message, int clientIndex, std::vector<Clien
             while (iss >> part)
                 split_user.push_back(part);
             std::cout << "Client " << clients[clientIndex].getClientSocket() << " set user to: " << split_user[0] << std::endl;
-            std::string successMsg = "User set to " + split_user[0] + "\n";
-            send(events[i].data.fd, successMsg.c_str(), successMsg.size(), 0);
+            sendWelcomeMessages(clients[clientIndex].getClientSocket(), clients[clientIndex].getNickName());
             clients[clientIndex].setUserName(split_user[0]);
             clients[clientIndex].setRealName(split_user[3]);
             clients[clientIndex].setIsRegistered(true);

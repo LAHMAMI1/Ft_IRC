@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/21 14:21:37 by olahmami          #+#    #+#             */
-/*   Updated: 2024/10/13 12:41:48 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/11/05 19:31:21 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,7 @@ void closeIfNot(int fd)
         close(fd);
 }
 
-bool ERR_NEEDMOREPARAMS(const std::string& message, int clientSocket, long unsigned int numParams)
+bool NEEDMOREPARAMS(const std::string& message, int clientSocket, long unsigned int numParams)
 {
     std::istringstream iss(message);
     std::vector<std::string> split_message;
@@ -48,11 +48,8 @@ bool ERR_NEEDMOREPARAMS(const std::string& message, int clientSocket, long unsig
     
     if (split_message.size() < numParams)
     {
-        std::cout << clientSocket << " " << split_message[0] << " :Not enough parameters"<< std::endl;
-        std::ostringstream oss;
-        oss << "Not enough parameters:\n";
-        std::string errorMsg = oss.str();
-        send(clientSocket, errorMsg.c_str(), errorMsg.size(), 0);
+        std::string errorMsg = ERR_NEEDMOREPARAMS(intToString(clientSocket), split_message[0]);
+        send(clientSocket, errorMsg.c_str(), errorMsg.length(), 0);
         return true;
     }
     return false;
@@ -99,3 +96,46 @@ bool isValidUser(const std::string& receivedUser)
         return false;
     return true;
 }
+
+// Create a function that will return the current time in the format: the day of the week, the month, the day of the month, the time, and the year.
+std::string getCurrentTime()
+{
+    time_t now = time(0);
+    tm* ltm = localtime(&now);
+    std::ostringstream oss;
+    char buffer[80];
+    strftime(buffer, sizeof(buffer), "%a %b %d %T %Y", ltm);
+    oss << buffer;
+    return oss.str();
+}
+
+void sendWelcomeMessages(int clientSocket, const std::string& nickName)
+{
+    send(clientSocket, RPL_WELCOME(nickName).c_str(), RPL_WELCOME(nickName).length(), 0);
+    send(clientSocket, RPL_YOURHOST(nickName).c_str(), RPL_YOURHOST(nickName).length(), 0);
+    send(clientSocket, RPL_CREATED(nickName).c_str(), RPL_CREATED(nickName).length(), 0);
+    send(clientSocket, RPL_MYINFO(nickName).c_str(), RPL_MYINFO(nickName).length(), 0);
+}
+
+std::string intToString(int num)
+{
+    std::ostringstream oss;
+    oss << num;
+    return oss.str();
+}
+
+bool NICKNAMEINUSE(const std::string& receivedNick, std::vector<Client>& clients, int clientSocket)
+{
+    // find in a vector of clients if the nickname is already in use
+    for (std::vector<Client>::size_type i = 0; i < clients.size(); i++)
+    {
+        if (clients[i].getNickName() == receivedNick)
+        {
+            std::string errorMsg = ERR_NICKNAMEINUSE(intToString(clientSocket), receivedNick);
+            send(clientSocket, errorMsg.c_str(), errorMsg.size(), 0);
+            return true;
+        }
+    }
+    return false;
+}
+
