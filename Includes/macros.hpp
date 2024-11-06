@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/05 09:59:58 by olahmami          #+#    #+#             */
-/*   Updated: 2024/11/05 18:02:11 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/11/06 14:33:37 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,5 +26,4 @@
 #define ERR_ALREADYREGISTERED(clientSocket) (":irc.chat.com 462 " + (clientSocket) + " :You may not reregister\r\n")
 #define ERR_ERRONEUSNICKNAME(clientSocket, nick) (":irc.chat.com 432 " + (clientSocket) + " " + (nick) + " :Erroneus nickname\r\n")
 #define ERR_NONICKNAMEGIVEN(clientSocket) (":irc.chat.com 431 " + (clientSocket) + " :No nickname given\r\n")
-#define ERR_NICKNAMEINUSE(clientSocket, nick) (":irc.chat.com 433 " + (clientSocket) + " " + (nick) + " :Nickname is already in use\r\n")
 

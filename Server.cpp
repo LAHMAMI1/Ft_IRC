@@ -6,13 +6,26 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/20 11:59:09 by olahmami          #+#    #+#             */
-/*   Updated: 2024/11/05 18:46:24 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/11/06 18:20:58 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Includes/ircserv.hpp"
 
 bool isShutdown = false;
+
+Server::Server()
+{
+    serverSocket = -1;
+    port = -1;
+    epollSocket = -1;
+    maxEvents = 9;
+    events.resize(9);
+    numEvents = 0;
+    bytesReceived = 0;
+    clientIndex = -1;
+    clients.resize(9);
+}
 
 void Server::serverInit(int ac, char **av)
 {
@@ -29,6 +42,11 @@ void Server::serverInit(int ac, char **av)
     serverSocket = socket(AF_INET, SOCK_STREAM, 0);
     if (serverSocket < 0)
         throw std::runtime_error("Socket creation failed");
+
+    // Set SO_REUSEADDR to allow immediate reuse of the port
+    int optval = 1;
+    if (setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) < 0)
+        throw std::runtime_error("Failed to set SO_REUSEADDR on server socket");
 
     // Set the socket to non-blocking mode
     if (fcntl(serverSocket, F_SETFL, O_NONBLOCK) < 0)
@@ -62,22 +80,15 @@ void Server::serverInit(int ac, char **av)
         throw std::runtime_error("Epoll control server failed");
 
     std::cout << "IRC server is waiting for incoming connections" << std::endl;
-
-    // Set the maximum number of events to be returned by epoll_wait
-    maxEvents = 9;
-    events.resize(maxEvents);
 }
 
 void Server::server(int ac, char **av)
 {
-    // Initialize the server
-    serverInit(ac, av);
-
-    // Set the clients number
-    std::vector<Client> clients(maxEvents);
-    
     // Channel name -> set of client sockets
     std::map< std::string, std::set<int> > channels;
+
+    // Initialize the server
+    serverInit(ac, av);
 
     while (isShutdown == false)
     {
@@ -104,7 +115,6 @@ void Server::server(int ac, char **av)
                     clients.resize(clients.capacity() * 2);
                 
                 // Find the first available slot in the clients vector
-                clientIndex = -1;
                 for (std::vector<Client>::size_type j = 0; j < clients.size(); j++)
                 {
                     if (clients[j].getClientSocket() == -1)
@@ -130,49 +140,50 @@ void Server::server(int ac, char **av)
                 evServer.events = EPOLLIN | EPOLLET;
                 evServer.data.fd = clients[clientIndex].getClientSocket();
                 if (epoll_ctl(epollSocket, EPOLL_CTL_ADD, clients[clientIndex].getClientSocket(), &evServer) < 0)
-                {
                     throw std::runtime_error("Epoll control client failed");
-                    closeIfNot(clients[clientIndex].getClientSocket());
-                }
             }
             // If the event is for a client socket, receive and process the message
             else
             {
                 std::fill(buffer, buffer + sizeof(buffer), 0);
                 bytesReceived = recv(events[i].data.fd, buffer, sizeof(buffer), 0);
+                std::cout << "Client " <<  events[i].data.fd << " sent: [" << buffer << "]" << std::endl;
                 if (bytesReceived <= 0)
                 {
                     std::cout << "Client disconnected: " << events[i].data.fd << std::endl;
                     epoll_ctl(epollSocket, EPOLL_CTL_DEL, events[i].data.fd, NULL);
-                    closeIfNot(events[i].data.fd);
+                    close(events[i].data.fd);
+                    for (std::vector<Client>::iterator it = clients.begin(); it != clients.end(); ++it)
+                    {
+                        if (it->getClientSocket() == events[i].data.fd)
+                        {
+                            it->setClientSocket(-1);
+                            it->setState(PASSWORD_REQUIRED);
+                            it->setNickName("");
+                            it->setUserName("");
+                            it->setRealName("");
+                            it->setIsRegistered(false);
+                            it->setIsOperator(false);
+                        }
+                    }
                 }
                 // Authentication process
                 else if (clients[clientIndex].getIsRegistered() == false)
                 {
                     std::string message(buffer);
-                    size_t newlinePos = message.find_first_of("\r\n");
-                    if (newlinePos != std::string::npos)
-                    {
-                        std::string firstPart = message.substr(0, newlinePos);
-                        std::string secondPart = message.substr(newlinePos + 2);
-                        secondPart.erase(std::remove(secondPart.begin(), secondPart.end(), '\r'), secondPart.end());
-                        secondPart.erase(std::remove(secondPart.begin(), secondPart.end(), '\n'), secondPart.end());
-                        std::cout << "First part: [" << firstPart << "]" << std::endl;
-                        std::cout << "Second part: [" << secondPart << "]" << std::endl;
-                    }
 
                     switch (clients[clientIndex].getState())
                     {
                         case PASSWORD_REQUIRED:
-                            passCommand(message, clientIndex, clients, events.data(), i);
+                            passCommand(message, clientIndex, clients);
                             break;
 
                         case NICK_REQUIRED:
-                            nickCommand(message, clientIndex, clients, events.data(), i);
+                            nickCommand(message, clientIndex, clients);
                             break;
 
                         case USER_REQUIRED:
-                            userCommand(message, clientIndex, clients, events.data(), i);
+                            userCommand(message, clientIndex, clients);
                             break;
                     }
                 }
@@ -189,13 +200,13 @@ void Server::server(int ac, char **av)
                     {
                         std::string channelName = message.substr(5);
                         trim(channelName);
-                        if (NEEDMOREPARAMS(message, events[i].data.fd, 2))
+                        if (NEEDMOREPARAMS(message, clients[clientIndex].getClientSocket(), 2))
                             return;
                         else if (channelName[0] != '#' || channelName.find(",") != std::string::npos)
                         {
                             std::cout << "Client " << clients[clientIndex].getClientSocket() << " :Invalid channel name" << std::endl;
                             std::string errorMsg = "Invalid channel name\n";
-                            send(events[i].data.fd, errorMsg.c_str(), errorMsg.size(), 0);
+                            send(clients[clientIndex].getClientSocket(), errorMsg.c_str(), errorMsg.size(), 0);
                         }
                         else
                         {
@@ -210,7 +221,7 @@ void Server::server(int ac, char **av)
                                 std::cout << "Client " << clients[clientIndex].getNickName() << " joined channel: " << channelName << std::endl;
                                 std::cout << "Client " << clients[clientIndex].getNickName() << " is operator in channel: " << channelName << std::endl;
                                 std::string successMsg = "Channel " + channelName + " created and joined" + " as operator\n";
-                                send(events[i].data.fd, successMsg.c_str(), successMsg.size(), 0);
+                                send(clients[clientIndex].getClientSocket(), successMsg.c_str(), successMsg.size(), 0);
                             }
                             // Insert the client socket into the channel if it exists
                             else
@@ -218,7 +229,7 @@ void Server::server(int ac, char **av)
                                 channels[channelName].insert(clients[clientIndex].getClientSocket());
                                 std::cout << "Client " << clients[clientIndex].getNickName() << " joined channel: " << channelName << std::endl;
                                 std::string successMsg = "Channel " + channelName + " joined\n";
-                                send(events[i].data.fd, successMsg.c_str(), successMsg.size(), 0);
+                                send(clients[clientIndex].getClientSocket(), successMsg.c_str(), successMsg.size(), 0);
                             }
                         }
                     }
@@ -226,8 +237,41 @@ void Server::server(int ac, char **av)
             }
         }
     }
-    closeIfNot(serverSocket);
-    closeIfNot(epollSocket);
 }
 
 int Server::getServerSocket() const { return serverSocket; }
+
+void Server::closeAllSockets()
+{
+    // Close all client sockets
+    for (std::vector<Client>::iterator it = clients.begin(); it != clients.end(); ++it)
+    {
+        int clientSocket = it->getClientSocket();
+        if (clientSocket != -1)
+        {
+            std::cout << "Client disconnected: " << clientSocket << std::endl;
+            if (epoll_ctl(epollSocket, EPOLL_CTL_DEL, clientSocket, NULL) < 0)
+                std::cerr << "Error removing client socket " << clientSocket << " from epoll\n";
+            
+            if (close(clientSocket) < 0)
+                std::cerr << "Error closing client socket " << clientSocket << std::endl;
+
+            it->setClientSocket(-1);
+        }
+    }
+
+    // Close server socket
+    std::cout << "Closing server socket: " << serverSocket << std::endl;
+    if (epoll_ctl(epollSocket, EPOLL_CTL_DEL, serverSocket, NULL) < 0)
+        std::cerr << "Error removing server socket from epoll\n";
+    
+    if (close(serverSocket) < 0)
+        std::cerr << "Error closing server socket\n";
+
+    // Close the epoll instance
+    std::cout << "Closing epoll socket: " << epollSocket << std::endl;
+    if (close(epollSocket) < 0)
+        std::cerr << "Error closing epoll socket\n";
+
+    std::cout << "All sockets closed.\n";
+}

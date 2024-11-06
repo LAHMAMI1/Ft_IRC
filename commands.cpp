@@ -6,13 +6,13 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 11:37:17 by olahmami          #+#    #+#             */
-/*   Updated: 2024/11/05 18:28:05 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/11/06 14:35:18 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Includes/ircserv.hpp"
 
-void Server::passCommand(std::string message, int clientIndex, std::vector<Client>& clients, struct epoll_event* events, int i)
+void Server::passCommand(std::string message, int clientIndex, std::vector<Client>& clients)
 {
     std::string receivedPassword;
 
@@ -24,23 +24,23 @@ void Server::passCommand(std::string message, int clientIndex, std::vector<Clien
 
     receivedPassword = message.substr(5);
     trim(receivedPassword);
-    if (NEEDMOREPARAMS(message, events[i].data.fd, 2))
+    if (NEEDMOREPARAMS(message, clients[clientIndex].getClientSocket(), 2))
         return;
     else if (receivedPassword == pwd)
     {
         std::cout << "Client connected: " << clients[clientIndex].getClientSocket() << std::endl;
         std::string successMsg = "Password accepted. Welcome to the server.\n";
-        send(events[i].data.fd, successMsg.c_str(), successMsg.size(), 0);
+        send(clients[clientIndex].getClientSocket(), successMsg.c_str(), successMsg.size(), 0);
         clients[clientIndex].setState(NICK_REQUIRED);
     }
     else
     {
-        std::string errorMsg = ERR_PASSWDMISMATCH(intToString(events[i].data.fd));
-        send(events[i].data.fd, errorMsg.c_str(), errorMsg.length(), 0);
+        std::string errorMsg = ERR_PASSWDMISMATCH(intToString(clients[clientIndex].getClientSocket()));
+        send(clients[clientIndex].getClientSocket(), errorMsg.c_str(), errorMsg.length(), 0);
     }
 }
 
-void Server::nickCommand(std::string message, int clientIndex, std::vector<Client>& clients, struct epoll_event* events, int i)
+void Server::nickCommand(std::string message, int clientIndex, std::vector<Client>& clients)
 {
     std::string receivedNick;
 
@@ -48,32 +48,32 @@ void Server::nickCommand(std::string message, int clientIndex, std::vector<Clien
     {
         receivedNick = message.substr(5);
         trim(receivedNick);
-        if (NICKNAMEINUSE(receivedNick, clients, events[i].data.fd))
+        if (ERR_NICKNAMEINUSE(receivedNick, clients, clients[clientIndex].getClientSocket()))
             return;
-        if (NEEDMOREPARAMS(message, events[i].data.fd, 2))
+        if (NEEDMOREPARAMS(message, clients[clientIndex].getClientSocket(), 2))
             return;
         else if (!isValidNick(receivedNick))
         {
-            std::string errorMsg = ERR_ERRONEUSNICKNAME(intToString(events[i].data.fd), receivedNick);
-            send(events[i].data.fd, errorMsg.c_str(), errorMsg.size(), 0);
+            std::string errorMsg = ERR_ERRONEUSNICKNAME(intToString(clients[clientIndex].getClientSocket()), receivedNick);
+            send(clients[clientIndex].getClientSocket(), errorMsg.c_str(), errorMsg.size(), 0);
         }
         else
         {
             std::cout << "Client " << clients[clientIndex].getClientSocket() << " set nickname to: " << receivedNick << std::endl;
             std::string successMsg = "Nickname set to " + receivedNick + "\n";
-            send(events[i].data.fd, successMsg.c_str(), successMsg.size(), 0);
+            send(clients[clientIndex].getClientSocket(), successMsg.c_str(), successMsg.size(), 0);
             clients[clientIndex].setNickName(receivedNick);
             clients[clientIndex].setState(USER_REQUIRED);
         }
     }
     else
     {
-        std::string errorMsg = ERR_NONICKNAMEGIVEN(intToString(events[i].data.fd));
-        send(events[i].data.fd, errorMsg.c_str(), errorMsg.size(), 0);
+        std::string errorMsg = ERR_NONICKNAMEGIVEN(intToString(clients[clientIndex].getClientSocket()));
+        send(clients[clientIndex].getClientSocket(), errorMsg.c_str(), errorMsg.size(), 0);
     }
 }
 
-void Server::userCommand(std::string message, int clientIndex, std::vector<Client>& clients, struct epoll_event* events, int i)
+void Server::userCommand(std::string message, int clientIndex, std::vector<Client>& clients)
 {
     std::string receivedUser;
 
@@ -81,13 +81,13 @@ void Server::userCommand(std::string message, int clientIndex, std::vector<Clien
     {
         receivedUser = message.substr(5);
         trim(receivedUser);
-        if (NEEDMOREPARAMS(message, events[i].data.fd, 5))
+        if (NEEDMOREPARAMS(message, clients[clientIndex].getClientSocket(), 5))
             return;
         else if (!isValidUser(receivedUser))
         {
             std::cout << "Client " << clients[clientIndex].getClientSocket() << " " << receivedUser << " :Invalid user" << std::endl;
             std::string errorMsg = "Invalid user\n";
-            send(events[i].data.fd, errorMsg.c_str(), errorMsg.size(), 0);
+            send(clients[clientIndex].getClientSocket(), errorMsg.c_str(), errorMsg.size(), 0);
         }
         else
         {
@@ -107,6 +107,6 @@ void Server::userCommand(std::string message, int clientIndex, std::vector<Clien
     {
         std::cout << "Client " << clients[clientIndex].getClientSocket() << " :User required" << std::endl;
         std::string errorMsg = "User required\n";
-        send(events[i].data.fd, errorMsg.c_str(), errorMsg.size(), 0);
+        send(clients[clientIndex].getClientSocket(), errorMsg.c_str(), errorMsg.size(), 0);
     }
 }

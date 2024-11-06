@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/21 14:21:37 by olahmami          #+#    #+#             */
-/*   Updated: 2024/11/05 19:31:21 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/11/06 17:52:34 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,12 +29,6 @@ std::string trim(std::string& trimmedStr)
         trimmedStr = trimmedStr.substr(0, end + 1);
 
     return trimmedStr;
-}
-
-void closeIfNot(int fd)
-{
-    if (fd != -1)
-        close(fd);
 }
 
 bool NEEDMOREPARAMS(const std::string& message, int clientSocket, long unsigned int numParams)
@@ -124,18 +118,16 @@ std::string intToString(int num)
     return oss.str();
 }
 
-bool NICKNAMEINUSE(const std::string& receivedNick, std::vector<Client>& clients, int clientSocket)
+bool ERR_NICKNAMEINUSE(const std::string& receivedNick, std::vector<Client>& clients, int clientSocket)
 {
-    // find in a vector of clients if the nickname is already in use
-    for (std::vector<Client>::size_type i = 0; i < clients.size(); i++)
+    for (std::vector<Client>::iterator it = clients.begin(); it != clients.end(); ++it)
     {
-        if (clients[i].getNickName() == receivedNick)
+        if (it->getNickName() == receivedNick)
         {
-            std::string errorMsg = ERR_NICKNAMEINUSE(intToString(clientSocket), receivedNick);
+            std::string errorMsg = "Nickname already in use\n";
             send(clientSocket, errorMsg.c_str(), errorMsg.size(), 0);
             return true;
         }
     }
     return false;
 }
-

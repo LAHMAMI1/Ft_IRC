@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/03 18:21:32 by olahmami          #+#    #+#             */
-/*   Updated: 2024/07/12 16:04:36 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/11/06 17:51:41 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,9 +27,9 @@ int main(int ac, char **av)
     catch(const std::exception& e)
     {
         std::cerr << e.what() << std::endl;
-        closeIfNot(irc.getServerSocket());
+        irc.closeAllSockets();
     }
-
+    irc.closeAllSockets();
     std::cout << "Exiting IRC server" << std::endl;
     return 0;
 }
