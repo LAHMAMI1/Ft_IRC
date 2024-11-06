@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 11:37:17 by olahmami          #+#    #+#             */
-/*   Updated: 2024/11/06 14:35:18 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/11/06 19:55:39 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,11 +16,6 @@ void Server::passCommand(std::string message, int clientIndex, std::vector<Clien
 {
     std::string receivedPassword;
 
-    if (message.rfind("PASS", 0) != 0)
-    {
-        std::cout << "Waiting for password from client: " << clients[clientIndex].getClientSocket() << std::endl;
-        return;
-    }
 
     receivedPassword = message.substr(5);
     trim(receivedPassword);
@@ -33,6 +28,8 @@ void Server::passCommand(std::string message, int clientIndex, std::vector<Clien
         send(clients[clientIndex].getClientSocket(), successMsg.c_str(), successMsg.size(), 0);
         clients[clientIndex].setState(NICK_REQUIRED);
     }
+    else if (message.rfind("PASS", 0) != 0)
+        return;
     else
     {
         std::string errorMsg = ERR_PASSWDMISMATCH(intToString(clients[clientIndex].getClientSocket()));

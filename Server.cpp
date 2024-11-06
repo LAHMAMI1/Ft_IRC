@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/20 11:59:09 by olahmami          #+#    #+#             */
-/*   Updated: 2024/11/06 18:20:58 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/11/06 20:01:09 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -148,7 +148,7 @@ void Server::server(int ac, char **av)
                 std::fill(buffer, buffer + sizeof(buffer), 0);
                 bytesReceived = recv(events[i].data.fd, buffer, sizeof(buffer), 0);
                 std::cout << "Client " <<  events[i].data.fd << " sent: [" << buffer << "]" << std::endl;
-                if (bytesReceived <= 0)
+                if (bytesReceived == 0)
                 {
                     std::cout << "Client disconnected: " << events[i].data.fd << std::endl;
                     epoll_ctl(epollSocket, EPOLL_CTL_DEL, events[i].data.fd, NULL);
@@ -167,6 +167,8 @@ void Server::server(int ac, char **av)
                         }
                     }
                 }
+                else if (bytesReceived < 0)
+                    throw std::runtime_error("Receive failed");
                 // Authentication process
                 else if (clients[clientIndex].getIsRegistered() == false)
                 {
@@ -264,7 +266,7 @@ void Server::closeAllSockets()
     std::cout << "Closing server socket: " << serverSocket << std::endl;
     if (epoll_ctl(epollSocket, EPOLL_CTL_DEL, serverSocket, NULL) < 0)
         std::cerr << "Error removing server socket from epoll\n";
-    
+
     if (close(serverSocket) < 0)
         std::cerr << "Error closing server socket\n";
 
