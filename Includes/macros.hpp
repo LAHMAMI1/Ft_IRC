@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/05 09:59:58 by olahmami          #+#    #+#             */
-/*   Updated: 2024/11/06 14:33:37 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/11/07 18:33:27 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,3 +27,9 @@
 #define ERR_ERRONEUSNICKNAME(clientSocket, nick) (":irc.chat.com 432 " + (clientSocket) + " " + (nick) + " :Erroneus nickname\r\n")
 #define ERR_NONICKNAMEGIVEN(clientSocket) (":irc.chat.com 431 " + (clientSocket) + " :No nickname given\r\n")
 
+// Channel Messages
+#define JOIN_CHANNEL(nickName, channelName) (":irc.chat.com" + (nickName) + " JOIN " + (channelName) + "\r\n")
+#define RPL_NOTOPIC(channelName) (":irc.chat.com 331 " + (channelName) + " :No topic is set\r\n")
+#define RPL_NAMREPLY(channelName, nickName) (":irc.chat.com 353 " + (nickName) + " = " + (channelName) + " :" + (nickName) + "\r\n")
+#define RPL_ENDOFNAMES(channelName, nickName) (":irc.chat.com 366 " + (nickName) + " " + (channelName) + " :End of /NAMES list\r\n")
+// #define RPL_TOPIC(channelName, topic) (":irc.chat.com 332 " + (channelName) + " :" + (topic) + "\r\n")

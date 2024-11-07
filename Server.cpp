@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/20 11:59:09 by olahmami          #+#    #+#             */
-/*   Updated: 2024/11/06 20:01:09 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/11/07 18:35:40 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -202,6 +202,7 @@ void Server::server(int ac, char **av)
                     {
                         std::string channelName = message.substr(5);
                         trim(channelName);
+
                         if (NEEDMOREPARAMS(message, clients[clientIndex].getClientSocket(), 2))
                             return;
                         else if (channelName[0] != '#' || channelName.find(",") != std::string::npos)
@@ -220,10 +221,16 @@ void Server::server(int ac, char **av)
                                 clientSockets.insert(clients[clientIndex].getClientSocket());
                                 channels.insert(std::pair< std::string, std::set<int> >(channelName, clientSockets));
                                 std::cout << "Client " << clients[clientIndex].getNickName() << " created channel: " << channelName << std::endl;
-                                std::cout << "Client " << clients[clientIndex].getNickName() << " joined channel: " << channelName << std::endl;
-                                std::cout << "Client " << clients[clientIndex].getNickName() << " is operator in channel: " << channelName << std::endl;
-                                std::string successMsg = "Channel " + channelName + " created and joined" + " as operator\n";
-                                send(clients[clientIndex].getClientSocket(), successMsg.c_str(), successMsg.size(), 0);
+                                
+                                std::string joinChannel = JOIN_CHANNEL(clients[clientIndex].getNickName(), channelName);
+                                std::string noTopic = RPL_NOTOPIC(channelName);
+                                std::string nameReply = RPL_NAMREPLY(channelName, clients[clientIndex].getNickName());
+                                std::string endOfNames = RPL_ENDOFNAMES(channelName, clients[clientIndex].getNickName());
+
+                                send(clients[clientIndex].getClientSocket(), joinChannel.c_str(), joinChannel.size(), 0);
+                                send(clients[clientIndex].getClientSocket(), noTopic.c_str(), noTopic.size(), 0);
+                                send(clients[clientIndex].getClientSocket(), nameReply.c_str(), nameReply.size(), 0);
+                                send(clients[clientIndex].getClientSocket(), endOfNames.c_str(), endOfNames.size(), 0);
                             }
                             // Insert the client socket into the channel if it exists
                             else
