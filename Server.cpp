@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/20 11:59:09 by olahmami          #+#    #+#             */
-/*   Updated: 2024/11/07 18:35:40 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/11/08 18:30:21 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,9 +84,6 @@ void Server::serverInit(int ac, char **av)
 
 void Server::server(int ac, char **av)
 {
-    // Channel name -> set of client sockets
-    std::map< std::string, std::set<int> > channels;
-
     // Initialize the server
     serverInit(ac, av);
 
@@ -214,17 +211,23 @@ void Server::server(int ac, char **av)
                         else
                         {
                             // Create a new channel if it does not exist
-                            if (channels.find(channelName) == channels.end())
+                            std::map<std::string, Channel>::iterator it = channels.find(channelName);
+                            if (it == channels.end())
                             {
-                                std::set<int> clientSockets;
-                                clients[clientIndex].setIsOperator(true);
-                                clientSockets.insert(clients[clientIndex].getClientSocket());
-                                channels.insert(std::pair< std::string, std::set<int> >(channelName, clientSockets));
+                                Channel newChannel;
+                                std::map<int, std::string> users;
+
+                                users.insert(std::pair<int, std::string>(clients[clientIndex].getClientSocket(), clients[clientIndex].getNickName()));
+                                newChannel.setChannelName(channelName);
+                                newChannel.setUsers(users);
+                                
+                                it = channels.insert(std::pair<std::string, Channel>(channelName, newChannel)).first;
+                                
                                 std::cout << "Client " << clients[clientIndex].getNickName() << " created channel: " << channelName << std::endl;
                                 
                                 std::string joinChannel = JOIN_CHANNEL(clients[clientIndex].getNickName(), channelName);
                                 std::string noTopic = RPL_NOTOPIC(channelName);
-                                std::string nameReply = RPL_NAMREPLY(channelName, clients[clientIndex].getNickName());
+                                std::string nameReply = RPL_NAMREPLY(it->second, clients[clientIndex].getNickName());
                                 std::string endOfNames = RPL_ENDOFNAMES(channelName, clients[clientIndex].getNickName());
 
                                 send(clients[clientIndex].getClientSocket(), joinChannel.c_str(), joinChannel.size(), 0);
@@ -233,15 +236,29 @@ void Server::server(int ac, char **av)
                                 send(clients[clientIndex].getClientSocket(), endOfNames.c_str(), endOfNames.size(), 0);
                             }
                             // Insert the client socket into the channel if it exists
-                            else
+                            else if (it->first == channelName)
                             {
-                                channels[channelName].insert(clients[clientIndex].getClientSocket());
+                                std::map<int, std::string>& user = it->second.getUsers();
+                                user.insert(std::pair<int, std::string>(clients[clientIndex].getClientSocket(), clients[clientIndex].getNickName()));
+
                                 std::cout << "Client " << clients[clientIndex].getNickName() << " joined channel: " << channelName << std::endl;
-                                std::string successMsg = "Channel " + channelName + " joined\n";
-                                send(clients[clientIndex].getClientSocket(), successMsg.c_str(), successMsg.size(), 0);
+
+                                std::string joinChannel = JOIN_CHANNEL(clients[clientIndex].getNickName(), channelName);
+                                std::string noTopic = RPL_NOTOPIC(channelName);
+                                std::string nameReply = RPL_NAMREPLY(it->second, clients[clientIndex].getNickName());
+                                std::string endOfNames = RPL_ENDOFNAMES(channelName, clients[clientIndex].getNickName());
+
+                                send(clients[clientIndex].getClientSocket(), joinChannel.c_str(), joinChannel.size(), 0);
+                                send(clients[clientIndex].getClientSocket(), noTopic.c_str(), noTopic.size(), 0);
+                                send(clients[clientIndex].getClientSocket(), nameReply.c_str(), nameReply.size(), 0);
+                                send(clients[clientIndex].getClientSocket(), endOfNames.c_str(), endOfNames.size(), 0);
                             }
                         }
                     }
+                    // else if (message.rfind("TOPIC", 0) == 0)
+                    // {
+                        
+                    // }
                 }
             }
         }
@@ -258,7 +275,7 @@ void Server::closeAllSockets()
         int clientSocket = it->getClientSocket();
         if (clientSocket != -1)
         {
-            std::cout << "Client disconnected: " << clientSocket << std::endl;
+            std::cout << "\nClient disconnected: " << clientSocket;
             if (epoll_ctl(epollSocket, EPOLL_CTL_DEL, clientSocket, NULL) < 0)
                 std::cerr << "Error removing client socket " << clientSocket << " from epoll\n";
             
@@ -270,7 +287,7 @@ void Server::closeAllSockets()
     }
 
     // Close server socket
-    std::cout << "Closing server socket: " << serverSocket << std::endl;
+    std::cout << "\nClosing server socket: " << serverSocket << std::endl;
     if (epoll_ctl(epollSocket, EPOLL_CTL_DEL, serverSocket, NULL) < 0)
         std::cerr << "Error removing server socket from epoll\n";
 

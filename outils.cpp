@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/21 14:21:37 by olahmami          #+#    #+#             */
-/*   Updated: 2024/11/06 17:52:34 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/11/08 18:03:37 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -130,4 +130,14 @@ bool ERR_NICKNAMEINUSE(const std::string& receivedNick, std::vector<Client>& cli
         }
     }
     return false;
+}
+
+std::string RPL_NAMREPLY(Channel channel, const std::string& nickName)
+{
+    std::string NamesReply = ":irc_server 353 " + nickName + " = " + channel.getChannelName() + " :";
+    for (std::map<int, std::string>::const_iterator it = channel.getUsers().begin(); it != channel.getUsers().end(); ++it)
+        NamesReply += it->second + " ";
+    NamesReply += "\r\n";
+
+    return NamesReply;
 }

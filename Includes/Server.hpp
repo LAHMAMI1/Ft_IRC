@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/20 09:55:28 by olahmami          #+#    #+#             */
-/*   Updated: 2024/11/06 17:49:48 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/11/08 15:55:37 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 
 #include "libs.hpp"
 #include "Client.hpp"
+#include "Channel.hpp"
 
 class Server
 {
@@ -31,6 +32,7 @@ class Server
         std::string pwd;
         int clientIndex;
         std::vector<Client> clients;
+        std::map<std::string, Channel> channels;
 
     public:
         // Constructors
