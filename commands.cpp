@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 11:37:17 by olahmami          #+#    #+#             */
-/*   Updated: 2024/11/06 19:55:39 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/11/09 16:00:02 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,3 +107,8 @@ void Server::userCommand(std::string message, int clientIndex, std::vector<Clien
         send(clients[clientIndex].getClientSocket(), errorMsg.c_str(), errorMsg.size(), 0);
     }
 }
+
+// void topicCommand(std::string message, int clientIndex, std::vector<Client>& clients)
+// {
+    
+// }

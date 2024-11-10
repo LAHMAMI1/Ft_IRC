@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/20 11:59:09 by olahmami          #+#    #+#             */
-/*   Updated: 2024/11/08 18:30:21 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/11/10 12:14:15 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -186,6 +186,80 @@ void Server::server(int ac, char **av)
                             break;
                     }
                 }
+                else if (clients[clientIndex].getIsOperator() == true)
+                {
+                    std::string message(buffer);
+                    trim(message);
+                    std::istringstream iss(message);
+                    std::string command;
+                    iss >> command;
+
+                    if (command == "TOPIC")
+                    {
+                        std::string channelName;
+                        iss >> channelName;
+                        std::string newTopic;
+                        std::getline(iss, newTopic);
+                        trim(newTopic);
+                        std::map<std::string, Channel>::iterator it = channels.find(channelName);
+                        
+                        if (NEEDMOREPARAMS(message, clients[clientIndex].getClientSocket(), 2))
+                            return;
+                        else if (channelName[0] != '#' || channelName.find(",") != std::string::npos)
+                        {
+                            std::cout << "Client " << clients[clientIndex].getClientSocket() << " :Invalid channel name" << std::endl;
+                            std::string errorMsg = "Invalid channel name\n";
+                            send(clients[clientIndex].getClientSocket(), errorMsg.c_str(), errorMsg.size(), 0);
+                        }
+                        else if (newTopic.size() > 1 && newTopic[0] != ':')
+                        {
+                            std::cout << "Client " << clients[clientIndex].getClientSocket() << " :Invalid topic format" << std::endl;
+                            std::string errorMsg = "Invalid topic format\n";
+                            send(clients[clientIndex].getClientSocket(), errorMsg.c_str(), errorMsg.size(), 0);
+                        }
+                        else if (it == channels.end())
+                        {
+                            std::string errorMsg = "Channel does not exist\n";
+                            send(clients[clientIndex].getClientSocket(), errorMsg.c_str(), errorMsg.size(), 0);
+                        }
+                        // Clear the Topic
+                        else if (newTopic == ":")
+                        {
+                            if (it->second.getTopic().empty())
+                            {
+                                std::string noTopic = RPL_NOTOPIC(channelName);
+                                send(clients[clientIndex].getClientSocket(), noTopic.c_str(), noTopic.size(), 0);
+                            }
+                            else
+                            {
+                                it->second.setTopic("");
+                                std::string clearTopic = RPL_TOPIC(channelName, "");
+                                send(clients[clientIndex].getClientSocket(), clearTopic.c_str(), clearTopic.size(), 0);
+                            }
+                        }
+                        // Check the Topic
+                        else if (newTopic == "")
+                        {
+                            if (it->second.getTopic().empty())
+                            {
+                                std::string noTopic = RPL_NOTOPIC(channelName);
+                                send(clients[clientIndex].getClientSocket(), noTopic.c_str(), noTopic.size(), 0);
+                            }
+                            else
+                            {
+                                std::string checkTopic = RPL_TOPIC(channelName, it->second.getTopic());
+                                send(clients[clientIndex].getClientSocket(), checkTopic.c_str(), checkTopic.size(), 0);
+                            }
+                        }
+                        // Set the Topic
+                        else
+                        {
+                            it->second.setTopic(newTopic.substr(1));
+                            std::string setTopic = RPL_TOPIC(channelName, newTopic.substr(1));
+                            send(clients[clientIndex].getClientSocket(), setTopic.c_str(), setTopic.size(), 0);
+                        }
+                    }
+                }
                 else
                 {
                     std::string message(buffer);
@@ -222,6 +296,8 @@ void Server::server(int ac, char **av)
                                 newChannel.setUsers(users);
                                 
                                 it = channels.insert(std::pair<std::string, Channel>(channelName, newChannel)).first;
+
+                                clients[clientIndex].setIsOperator(true);
                                 
                                 std::cout << "Client " << clients[clientIndex].getNickName() << " created channel: " << channelName << std::endl;
                                 
@@ -244,21 +320,28 @@ void Server::server(int ac, char **av)
                                 std::cout << "Client " << clients[clientIndex].getNickName() << " joined channel: " << channelName << std::endl;
 
                                 std::string joinChannel = JOIN_CHANNEL(clients[clientIndex].getNickName(), channelName);
-                                std::string noTopic = RPL_NOTOPIC(channelName);
-                                std::string nameReply = RPL_NAMREPLY(it->second, clients[clientIndex].getNickName());
-                                std::string endOfNames = RPL_ENDOFNAMES(channelName, clients[clientIndex].getNickName());
-
                                 send(clients[clientIndex].getClientSocket(), joinChannel.c_str(), joinChannel.size(), 0);
-                                send(clients[clientIndex].getClientSocket(), noTopic.c_str(), noTopic.size(), 0);
+                                
+                                if (it->second.getTopic().empty())
+                                {
+                                    std::string noTopic = RPL_NOTOPIC(channelName);
+                                    send(clients[clientIndex].getClientSocket(), noTopic.c_str(), noTopic.size(), 0);
+                                }
+                                else
+                                {
+                                    std::string checkTopic = RPL_TOPIC(channelName, it->second.getTopic());
+                                    send(clients[clientIndex].getClientSocket(), checkTopic.c_str(), checkTopic.size(), 0);
+                                }
+                                
+                                std::string nameReply = RPL_NAMREPLY(it->second, clients[clientIndex].getNickName());
                                 send(clients[clientIndex].getClientSocket(), nameReply.c_str(), nameReply.size(), 0);
+                                
+                                std::string endOfNames = RPL_ENDOFNAMES(channelName, clients[clientIndex].getNickName());
                                 send(clients[clientIndex].getClientSocket(), endOfNames.c_str(), endOfNames.size(), 0);
+
                             }
                         }
                     }
-                    // else if (message.rfind("TOPIC", 0) == 0)
-                    // {
-                        
-                    // }
                 }
             }
         }
