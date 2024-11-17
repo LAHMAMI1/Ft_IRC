@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/20 09:55:28 by olahmami          #+#    #+#             */
-/*   Updated: 2024/11/08 15:55:37 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/11/17 09:53:18 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,8 +46,12 @@ class Server
         // Setters and Getters
         int getServerSocket() const;
 
-        // Command functions
-        void passCommand(std::string message, int clientIndex, std::vector<Client>& clients);
-        void nickCommand(std::string message, int clientIndex, std::vector<Client>& clients);
-        void userCommand(std::string message, int clientIndex, std::vector<Client>& clients);
+        // Command Authentication
+        void passCommand(std::string message);
+        void nickCommand(std::string message);
+        void userCommand(std::string message);
+
+        // Command Operations
+        void topicCommand(std::string& message, std::istringstream& iss);
+        void kickCommand(std::string& message, std::istringstream& iss);
 };
