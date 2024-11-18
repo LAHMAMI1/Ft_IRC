@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/20 11:59:09 by olahmami          #+#    #+#             */
-/*   Updated: 2024/11/17 11:45:42 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/11/18 15:16:50 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -198,7 +198,10 @@ void Server::server(int ac, char **av)
                         topicCommand(message, iss);
                     else if (command == "KICK")
                         kickCommand(message, iss);
-                    
+                    else if (command == "INVITE")
+                        inviteCommand(message, iss);
+                    else if (command == "MODE")
+                        modeCommand(message, iss);
                     
                 }
                 else

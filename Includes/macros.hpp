@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/05 09:59:58 by olahmami          #+#    #+#             */
-/*   Updated: 2024/11/12 21:48:21 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/11/18 18:13:23 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,11 +26,15 @@
 #define ERR_ALREADYREGISTERED(clientSocket) (":irc.chat.com 462 " + (clientSocket) + " :You may not reregister\r\n")
 #define ERR_ERRONEUSNICKNAME(clientSocket, nick) (":irc.chat.com 432 " + (clientSocket) + " " + (nick) + " :Erroneus nickname\r\n")
 #define ERR_NONICKNAMEGIVEN(clientSocket) (":irc.chat.com 431 " + (clientSocket) + " :No nickname given\r\n")
+#define ERR_NOSUCHCHANNEL(channelName) (":irc.chat.com 403 " + (channelName) + " :No such channel\r\n")
+#define ERR_USERNOTINCHANNEL(nickName, channelName) (":irc.chat.com 441 " + (nickName) + " " + (channelName) + " :They aren't on that channel\r\n")
+#define ERR_NOSUCHNICK(nickName) (":irc.chat.com 401 " + (nickName) + " :No such nick/channel\r\n")
+#define ERR_USERONCHANNEL(nickName, channelName) (":irc.chat.com 443 " + (nickName) + " " + (channelName) + " :is already on channel\r\n")
 
 // Channel Messages
 #define JOIN_CHANNEL(nickName, channelName) (":" + (nickName) + " JOIN " + (channelName) + "\r\n")
 #define RPL_NOTOPIC(channelName) (":irc.chat.com 331 " + (channelName) + " :No topic is set\r\n")
 #define RPL_ENDOFNAMES(channelName, nickName) (":irc.chat.com 366 " + (nickName) + " " + (channelName) + " :End of /NAMES list\r\n")
 #define RPL_TOPIC(channelName, topic) (":irc.chat.com 332 " + (channelName) + " :" + (topic) + "\r\n")
-#define ERR_NOSUCHCHANNEL(channelName) (":irc.chat.com 403 " + (channelName) + " :No such channel\r\n")
-#define ERR_USERNOTINCHANNEL(nickName, channelName) (":irc.chat.com 441 " + (nickName) + " " + (channelName) + " :They aren't on that channel\r\n")
+#define RPL_INVITING(nickName, targetNick, channelName) (":irc.chat.com 341 " + (nickName) + " " + (targetNick) + " " + (channelName) + "\r\n")
+// #define RPL_CHANNELMODEIS(channelName, mode) (":irc.chat.com 324 " + (channelName) + " " + (mode) + "\r\n")

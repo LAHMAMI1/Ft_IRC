@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/20 09:55:28 by olahmami          #+#    #+#             */
-/*   Updated: 2024/11/17 09:53:18 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/11/18 15:17:13 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,4 +54,6 @@ class Server
         // Command Operations
         void topicCommand(std::string& message, std::istringstream& iss);
         void kickCommand(std::string& message, std::istringstream& iss);
+        void inviteCommand(std::string& message, std::istringstream& iss);
+        void modeCommand(std::string& message, std::istringstream& iss);
 };

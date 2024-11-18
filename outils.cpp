@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/21 14:21:37 by olahmami          #+#    #+#             */
-/*   Updated: 2024/11/08 18:03:37 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/11/18 12:37:31 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -140,4 +140,24 @@ std::string RPL_NAMREPLY(Channel channel, const std::string& nickName)
     NamesReply += "\r\n";
 
     return NamesReply;
+}
+
+bool findNickName(const std::vector<Client>& clients, const std::string& target)
+{
+    for (std::vector<Client>::const_iterator it = clients.begin(); it != clients.end(); ++it)
+    {
+        if (it->getNickName() == target)
+            return true;
+    }
+    return false;
+}
+
+bool findNickInChannel(const std::map<int, std::string>& users, const std::string& target)
+{
+    for (std::map<int, std::string>::const_iterator it = users.begin(); it != users.end(); ++it)
+    {
+        if (it->second == target)
+            return true;
+    }
+    return false;
 }
