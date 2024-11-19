@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/05 09:59:58 by olahmami          #+#    #+#             */
-/*   Updated: 2024/11/18 18:13:23 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/11/19 16:58:32 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,7 @@
 #define ERR_USERNOTINCHANNEL(nickName, channelName) (":irc.chat.com 441 " + (nickName) + " " + (channelName) + " :They aren't on that channel\r\n")
 #define ERR_NOSUCHNICK(nickName) (":irc.chat.com 401 " + (nickName) + " :No such nick/channel\r\n")
 #define ERR_USERONCHANNEL(nickName, channelName) (":irc.chat.com 443 " + (nickName) + " " + (channelName) + " :is already on channel\r\n")
+#define ERR_INVITEONLYCHAN(channelName) (":irc.chat.com 473 " + (channelName) + " :Cannot join channel (+i)\r\n")
 
 // Channel Messages
 #define JOIN_CHANNEL(nickName, channelName) (":" + (nickName) + " JOIN " + (channelName) + "\r\n")
@@ -37,4 +38,4 @@
 #define RPL_ENDOFNAMES(channelName, nickName) (":irc.chat.com 366 " + (nickName) + " " + (channelName) + " :End of /NAMES list\r\n")
 #define RPL_TOPIC(channelName, topic) (":irc.chat.com 332 " + (channelName) + " :" + (topic) + "\r\n")
 #define RPL_INVITING(nickName, targetNick, channelName) (":irc.chat.com 341 " + (nickName) + " " + (targetNick) + " " + (channelName) + "\r\n")
-// #define RPL_CHANNELMODEIS(channelName, mode) (":irc.chat.com 324 " + (channelName) + " " + (mode) + "\r\n")
+#define RPL_CHANNELMODEIS(channelName, mode) (":irc.chat.com 324 " + (channelName) + " " + (mode) + "\r\n")

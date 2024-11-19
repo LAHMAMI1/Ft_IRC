@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/20 11:59:09 by olahmami          #+#    #+#             */
-/*   Updated: 2024/11/18 15:16:50 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/11/19 18:37:05 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -256,7 +256,7 @@ void Server::server(int ac, char **av)
                                 send(clients[clientIndex].getClientSocket(), endOfNames.c_str(), endOfNames.size(), 0);
                             }
                             // Insert the client socket into the channel if it exists
-                            else if (it->first == channelName)
+                            else if (it->first == channelName && (it->second.getInviteOnly() == false || clients[clientIndex].getIsInvited() == true))
                             {
                                 std::map<int, std::string>& user = it->second.getUsers();
                                 user.insert(std::pair<int, std::string>(clients[clientIndex].getClientSocket(), clients[clientIndex].getNickName()));
@@ -282,7 +282,11 @@ void Server::server(int ac, char **av)
                                 
                                 std::string endOfNames = RPL_ENDOFNAMES(channelName, clients[clientIndex].getNickName());
                                 send(clients[clientIndex].getClientSocket(), endOfNames.c_str(), endOfNames.size(), 0);
-
+                            }
+                            else
+                            {
+                                std::string errorMsg = ERR_INVITEONLYCHAN(channelName);
+                                send(clients[clientIndex].getClientSocket(), errorMsg.c_str(), errorMsg.size(), 0);
                             }
                         }
                     }

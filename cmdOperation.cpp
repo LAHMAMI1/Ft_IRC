@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/16 15:53:04 by olahmami          #+#    #+#             */
-/*   Updated: 2024/11/18 16:21:56 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/11/19 18:18:03 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -179,6 +179,7 @@ void Server::inviteCommand(std::string& message, std::istringstream& iss)
         {
             if (it->getNickName() == targetNick)
             {
+                it->setIsInvited(true);
                 std::string inviteMsg = RPL_INVITING(clients[clientIndex].getNickName(), targetNick, channelName);
                 send(it->getClientSocket(), inviteMsg.c_str(), inviteMsg.size(), 0);
                 send(clients[clientIndex].getClientSocket(), inviteMsg.c_str(), inviteMsg.size(), 0);
@@ -192,5 +193,48 @@ void Server::inviteCommand(std::string& message, std::istringstream& iss)
 
 void Server::modeCommand(std::string& message, std::istringstream& iss)
 {
-    
+    std::string channelName;
+    std::string mode;
+    std::string param;
+
+    iss >> channelName;
+    iss >> mode;
+    iss >> param;
+
+    std::map<std::string, Channel>::iterator it = channels.find(channelName);
+
+    if (mode.empty())
+    {
+        std::string rplMsg = RPL_CHANNELMODEIS(channelName, it->second.getWichMode());
+        send(clients[clientIndex].getClientSocket(), rplMsg.c_str(), rplMsg.size(), 0);
+    }
+    else if (channelName[0] != '#' || channelName.find(",") != std::string::npos)
+    {
+        std::cout << "Client " << clients[clientIndex].getClientSocket() << " :Invalid channel name" << std::endl;
+        std::string errorMsg = "Invalid channel name\n";
+        send(clients[clientIndex].getClientSocket(), errorMsg.c_str(), errorMsg.size(), 0);
+    }
+    else if (it == channels.end())
+    {
+        std::string errorMsg = ERR_NOSUCHCHANNEL(channelName);
+        send(clients[clientIndex].getClientSocket(), errorMsg.c_str(), errorMsg.size(), 0);
+    }
+
+    if (param.empty())
+    {
+        if (mode == "+i")
+        {
+            it->second.setInviteOnly(true);
+            std::cout << "Client " << clients[clientIndex].getNickName() << " set channel " << channelName << " to invite only" << std::endl;
+            std::string rplMsg = "Client " + clients[clientIndex].getNickName() + " set channel " + channelName + " to invite only\n";
+            send(clients[clientIndex].getClientSocket(), rplMsg.c_str(), rplMsg.size(), 0);
+        }
+        else if (mode == "-i")
+        {
+            it->second.setInviteOnly(false);
+            std::cout << "Client " << clients[clientIndex].getNickName() << " set channel " << channelName << " to not invite only" << std::endl;
+            std::string rplMsg = "Client " + clients[clientIndex].getNickName() + " set channel " + channelName + " to not invite only\n";
+            send(clients[clientIndex].getClientSocket(), rplMsg.c_str(), rplMsg.size(), 0);
+        }
+    }
 }
