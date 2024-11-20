@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/20 11:59:09 by olahmami          #+#    #+#             */
-/*   Updated: 2024/11/19 18:37:05 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/11/20 18:20:07 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -202,6 +202,7 @@ void Server::server(int ac, char **av)
                         inviteCommand(message, iss);
                     else if (command == "MODE")
                         modeCommand(message, iss);
+                    
                     
                 }
                 else

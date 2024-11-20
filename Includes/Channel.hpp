@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/08 14:39:21 by olahmami          #+#    #+#             */
-/*   Updated: 2024/11/19 17:19:38 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/11/20 17:19:59 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,9 @@ class Channel
         std::string topic;
         bool inviteOnly; // +i
         std::string wichMode;
+        bool protectedTopic; // +t
+        std::string key; // +k
+        int limit; // +l
 
     public:
         // Constructors
@@ -38,4 +41,10 @@ class Channel
         void setInviteOnly(bool inviteOnly);
         std::string getWichMode() const;
         void setWichMode(std::string wichMode);
+        bool getProtectedTopic() const;
+        void setProtectedTopic(bool protectedTopic);
+        std::string getKey() const;
+        void setKey(std::string key);
+        int getLimit() const;
+        void setLimit(int limit);
 };

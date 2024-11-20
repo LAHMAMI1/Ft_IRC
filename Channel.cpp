@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/08 14:48:38 by olahmami          #+#    #+#             */
-/*   Updated: 2024/11/19 17:20:17 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/11/20 17:20:23 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,9 @@ Channel::Channel()
     topic = "";
     inviteOnly = true;
     wichMode = "+i";
+    protectedTopic = true;
+    key = "";
+    limit = 0;
 }
 
 // Setters and Getters
@@ -41,3 +44,15 @@ void Channel::setInviteOnly(bool inviteOnly) { this->inviteOnly = inviteOnly; }
 std::string Channel::getWichMode() const { return wichMode; }
 
 void Channel::setWichMode(std::string wichMode) { this->wichMode = wichMode; }
+
+bool Channel::getProtectedTopic() const { return protectedTopic; }
+
+void Channel::setProtectedTopic(bool protectedTopic) { this->protectedTopic = protectedTopic; }
+
+std::string Channel::getKey() const { return key; }
+
+void Channel::setKey(std::string key) { this->key = key; }
+
+int Channel::getLimit() const { return limit; }
+
+void Channel::setLimit(int limit) { this->limit = limit; }
