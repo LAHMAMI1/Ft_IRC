@@ -6,14 +6,28 @@
 #    By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/06/03 12:31:08 by olahmami          #+#    #+#              #
-#    Updated: 2024/11/17 09:59:34 by olahmami         ###   ########.fr        #
+#    Updated: 2024/11/21 18:39:54 by olahmami         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 CXX = c++
 CXXFLAGS = -std=c++98 -Wall -Werror -Wextra -fsanitize=address
 NAME = ircserv
-SRCS = ircserv.cpp Server.cpp Client.cpp outils.cpp cmdAuthentication.cpp Channel.cpp cmdOperation.cpp
+SRCS = 	ircserv.cpp \
+		Server.cpp \
+		Client.cpp \
+		Channel.cpp \
+		outils.cpp \
+		connection.cpp \
+		Commands/INVITE.cpp \
+		Commands/JOIN.cpp \
+		Commands/KICK.cpp \
+		Commands/MODE.cpp \
+		Commands/NICK.cpp \
+		Commands/PASS.cpp \
+		Commands/TOPIC.cpp \
+		Commands/USER.cpp \
+
 OBJS = $(SRCS:.cpp=.o)
 
 all: $(NAME)

@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/05 09:59:58 by olahmami          #+#    #+#             */
-/*   Updated: 2024/11/20 17:27:33 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/11/21 18:11:36 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,7 @@
 #define ERR_INVITEONLYCHAN(channelName) (":irc.chat.com 473 " + (channelName) + " :Cannot join channel (+i)\r\n")
 #define ERR_INVALIDMODEPARAM(nickName, channelName, mode, param) (":irc.chat.com 696 " + (nickName) + " " + (channelName) + " " + (mode) + " " + (param) + " :Invalid mode parameter\r\n")
 #define ERR_INVALIDKEY(nickName, channelName) (":irc.chat.com 525 " + (nickName) + " " + (channelName) + " :Key is not well-formed\r\n")
+#define ERR_CHANOPRIVSNEEDED(nickName, channelName) (":irc.chat.com 482 " + (nickName) + " " + (channelName) + " :You're not channel operator\r\n")
 // #define ERR_BADCHANNELKEY
 // #define ERR_CHANNELISFULL
 
