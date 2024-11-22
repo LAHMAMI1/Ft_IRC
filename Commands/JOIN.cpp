@@ -6,16 +6,20 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/21 15:38:04 by olahmami          #+#    #+#             */
-/*   Updated: 2024/11/21 18:36:02 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/11/22 16:06:27 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../Includes/ircserv.hpp"
 
-void Server::joinCommand(std::string& message)
+void Server::joinCommand(std::string& message, std::istringstream& iss)
 {
-    std::string channelName = message.substr(5);
-    trim(channelName);
+    std::string channelName;
+    std::string receivedKey;
+
+    iss >> channelName;
+    std::getline(iss, receivedKey);
+    trim(receivedKey);
 
     if (NEEDMOREPARAMS(message, clients[clientIndex].getClientSocket(), 2))
         return;
@@ -27,10 +31,17 @@ void Server::joinCommand(std::string& message)
     }
     else
     {
-        // Create a new channel if it does not exist
         std::map<std::string, Channel>::iterator it = channels.find(channelName);
+        // Create a new channel if it does not exist
         if (it == channels.end())
         {
+            if (!receivedKey.empty())
+            {
+                std::cout << "receivedKey: " << receivedKey << std::endl;
+                std::string errorMsg = "Error: Theres is more parameters than expected\n";
+                send(clients[clientIndex].getClientSocket(), errorMsg.c_str(), errorMsg.size(), 0);
+                return;
+            }
             Channel newChannel;
             std::map<int, std::string> users;
 
@@ -57,7 +68,26 @@ void Server::joinCommand(std::string& message)
         // Insert the client socket into the channel if it exists
         else if (it->first == channelName && (it->second.getInviteOnly() == false || clients[clientIndex].getIsInvited() == true))
         {
-            
+            // Check if the channel is full
+            if (it->second.getLimit() != 0 && (it->second.getUsers().size() == it->second.getLimit()))
+            {
+                std::string errorMsg = ERR_CHANNELISFULL(clients[clientIndex].getNickName(), channelName);
+                send(clients[clientIndex].getClientSocket(), errorMsg.c_str(), errorMsg.size(), 0);
+                return;
+            }
+            // Check if the channel has a key
+            if (!it->second.getKey().empty())
+            {
+                if ((it->second.getKey() != receivedKey) || receivedKey.empty())
+                {
+                    std::string errorMsg = ERR_BADCHANNELKEY(clients[clientIndex].getNickName(), channelName);
+                    std::string instruct = "Usage: /JOIN " + channelName + " <KEY> \n";
+                    send(clients[clientIndex].getClientSocket(), errorMsg.c_str(), errorMsg.size(), 0);
+                    send(clients[clientIndex].getClientSocket(), instruct.c_str(), instruct.size(), 0);
+                    return;
+                }
+            }
+
             std::map<int, std::string>& user = it->second.getUsers();
             user.insert(std::pair<int, std::string>(clients[clientIndex].getClientSocket(), clients[clientIndex].getNickName()));
 

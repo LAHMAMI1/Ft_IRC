@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/05 09:59:58 by olahmami          #+#    #+#             */
-/*   Updated: 2024/11/21 18:11:36 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/11/22 17:59:45 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,9 +34,12 @@
 #define ERR_INVALIDMODEPARAM(nickName, channelName, mode, param) (":irc.chat.com 696 " + (nickName) + " " + (channelName) + " " + (mode) + " " + (param) + " :Invalid mode parameter\r\n")
 #define ERR_INVALIDKEY(nickName, channelName) (":irc.chat.com 525 " + (nickName) + " " + (channelName) + " :Key is not well-formed\r\n")
 #define ERR_CHANOPRIVSNEEDED(nickName, channelName) (":irc.chat.com 482 " + (nickName) + " " + (channelName) + " :You're not channel operator\r\n")
-// #define ERR_BADCHANNELKEY
-// #define ERR_CHANNELISFULL
-
+#define ERR_BADCHANNELKEY(nickName, channelName) (":irc.chat.com 475 " + (nickName) + " " + (channelName) + " :Cannot join channel (+k)\r\n")
+#define ERR_CHANNELISFULL(nickName, channelName) (":irc.chat.com 471 " + (nickName) + " " + (channelName) + " :Cannot join channel (+l)\r\n")
+#define ERR_NORECIPIENT(nickName, cmd) (":irc.chat.com 411 " + (nickName) + " :No recipient given (" + (cmd) + ")\r\n")
+#define ERR_NOTEXTTOSEND(nickName) (":irc.chat.com 412 " + (nickName) + " :No text to send\r\n")
+#define ERR_CANNOTSENDTOCHAN(nickName, channelName) (":irc.chat.com 404 " + (nickName) + " " + (channelName) + " :Cannot send to channel\r\n")
+#define ERR_NOORIGIN(nickName) (":irc.chat.com 409 " + (nickName) + " :No origin specified\r\n")
 
 // Channel Messages
 #define JOIN_CHANNEL(nickName, channelName) (":" + (nickName) + " JOIN " + (channelName) + "\r\n")

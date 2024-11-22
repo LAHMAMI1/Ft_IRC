@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/20 11:59:09 by olahmami          #+#    #+#             */
-/*   Updated: 2024/11/21 18:24:08 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/11/22 18:32:36 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,6 +79,7 @@ void Server::server(int ac, char **av)
                             it->setRealName("");
                             it->setIsRegistered(false);
                             it->setIsOperator(false);
+                            it->setIsInvited(false);
                         }
                     }
                 }
@@ -94,7 +95,7 @@ void Server::server(int ac, char **av)
                 }
                 // Channels process
                 else if (command == "JOIN")
-                    joinCommand(message);
+                    joinCommand(message, iss);
                 else if (command == "INVITE")
                     inviteCommand(message, iss);
                 else if (command == "TOPIC")
@@ -103,6 +104,12 @@ void Server::server(int ac, char **av)
                     kickCommand(message, iss);
                 else if (command == "MODE")
                     modeCommand(message, iss);
+                else if (command == "PRIVMSG")
+                    privmsgCommand(message, iss);
+                else if (command == "PING")
+                    pingCommand(iss);
+                else if (command == "QUIT")
+                    quitCommand(iss);
             }
         }
     }

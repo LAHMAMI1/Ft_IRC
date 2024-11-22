@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/20 09:55:28 by olahmami          #+#    #+#             */
-/*   Updated: 2024/11/21 15:23:40 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/11/22 18:32:49 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,11 +54,16 @@ class Server
         void userCommand(std::string& message);
 
         // Join Command
-        void joinCommand(std::string& message);
+        void joinCommand(std::string& message, std::istringstream& iss);
 
         // Command Operations
         void topicCommand(std::string& message, std::istringstream& iss);
         void kickCommand(std::string& message, std::istringstream& iss);
         void inviteCommand(std::string& message, std::istringstream& iss);
         void modeCommand(std::string& message, std::istringstream& iss);
+
+        // Command Messages
+        void privmsgCommand(std::string& message, std::istringstream& iss);
+        void pingCommand(std::istringstream& iss);
+        void quitCommand(std::istringstream& iss);
 };

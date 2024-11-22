@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/08 14:39:21 by olahmami          #+#    #+#             */
-/*   Updated: 2024/11/20 17:19:59 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/11/22 13:00:07 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ class Channel
         std::string wichMode;
         bool protectedTopic; // +t
         std::string key; // +k
-        int limit; // +l
+        size_t limit; // +l
 
     public:
         // Constructors
@@ -45,6 +45,6 @@ class Channel
         void setProtectedTopic(bool protectedTopic);
         std::string getKey() const;
         void setKey(std::string key);
-        int getLimit() const;
-        void setLimit(int limit);
+        size_t getLimit() const;
+        void setLimit(size_t limit);
 };

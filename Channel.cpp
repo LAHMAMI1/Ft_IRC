@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/08 14:48:38 by olahmami          #+#    #+#             */
-/*   Updated: 2024/11/20 17:20:23 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/11/22 13:00:20 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,6 +53,6 @@ std::string Channel::getKey() const { return key; }
 
 void Channel::setKey(std::string key) { this->key = key; }
 
-int Channel::getLimit() const { return limit; }
+size_t Channel::getLimit() const { return limit; }
 
-void Channel::setLimit(int limit) { this->limit = limit; }
+void Channel::setLimit(size_t limit) { this->limit = limit; }
