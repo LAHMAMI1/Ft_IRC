@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/21 18:21:58 by olahmami          #+#    #+#             */
-/*   Updated: 2024/11/21 18:27:18 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/11/23 14:35:22 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,13 +14,6 @@
 
 void Server::modeCommand(std::string& message, std::istringstream& iss)
 {
-    if (clients[clientIndex].getIsOperator() == false)
-    {
-        std::string errorMsg = ERR_CHANOPRIVSNEEDED(clients[clientIndex].getNickName(), "MODE");
-        send(clients[clientIndex].getClientSocket(), errorMsg.c_str(), errorMsg.size(), 0);
-        return;
-    }
-
     std::string channelName;
     std::string mode;
     std::string param;
@@ -32,6 +25,17 @@ void Server::modeCommand(std::string& message, std::istringstream& iss)
 
     std::map<std::string, Channel>::iterator it = channels.find(channelName);
 
+    if ((clients[clientIndex].getIsOperator() == false && channelName[0] != '#') || clients[clientIndex].getModeChannelMSG() == true)
+    {
+        clients[clientIndex].setModeChannelMSG(false);
+        return;
+    }
+    if (clients[clientIndex].getIsOperator() == false)
+    {
+        std::string errorMsg = ERR_CHANOPRIVSNEEDED(clients[clientIndex].getNickName(), "MODE");
+        send(clients[clientIndex].getClientSocket(), errorMsg.c_str(), errorMsg.size(), 0);
+        return;
+    }
     if (NEEDMOREPARAMS(message, clients[clientIndex].getClientSocket(), 3))
         return;
     else if (mode.empty())

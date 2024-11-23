@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/21 14:21:37 by olahmami          #+#    #+#             */
-/*   Updated: 2024/11/18 12:37:31 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/11/23 10:48:22 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,18 +49,6 @@ bool NEEDMOREPARAMS(const std::string& message, int clientSocket, long unsigned 
     return false;
 }
 
-bool isValidNick(const std::string& receivedNick)
-{
-    if (!isalpha(receivedNick[0]))
-        return false;
-    for (size_t i = 1; i < receivedNick.size(); i++)
-    {
-        if (!isalnum(receivedNick[i]) && receivedNick[i] != '_' && receivedNick[i] != '-')
-            return false;
-    }
-    return true;
-}
-
 bool isAlphaWord(const std::string& word)
 {
     for (size_t i = 0; i < word.size(); i++)
@@ -71,27 +59,6 @@ bool isAlphaWord(const std::string& word)
     return true;
 }
 
-bool isValidUser(const std::string& receivedUser)
-{
-    std::istringstream iss(receivedUser);
-    std::vector<std::string> split_user;
-    std::string word;
-
-    while (iss >> word)
-        split_user.push_back(word);
-
-    if (!isAlphaWord(split_user[0]) || !isAlphaWord(split_user[3]))
-        return false;
-    if (split_user[1][0] != '0' && split_user[1].size() > 1)
-        return false;
-    if (split_user[2][0] != '*' && split_user[2].size() > 1)
-        return false;
-    if (split_user.size() == 5 && !isAlphaWord(split_user[4]))
-        return false;
-    return true;
-}
-
-// Create a function that will return the current time in the format: the day of the week, the month, the day of the month, the time, and the year.
 std::string getCurrentTime()
 {
     time_t now = time(0);
@@ -103,33 +70,11 @@ std::string getCurrentTime()
     return oss.str();
 }
 
-void sendWelcomeMessages(int clientSocket, const std::string& nickName)
-{
-    send(clientSocket, RPL_WELCOME(nickName).c_str(), RPL_WELCOME(nickName).length(), 0);
-    send(clientSocket, RPL_YOURHOST(nickName).c_str(), RPL_YOURHOST(nickName).length(), 0);
-    send(clientSocket, RPL_CREATED(nickName).c_str(), RPL_CREATED(nickName).length(), 0);
-    send(clientSocket, RPL_MYINFO(nickName).c_str(), RPL_MYINFO(nickName).length(), 0);
-}
-
 std::string intToString(int num)
 {
     std::ostringstream oss;
     oss << num;
     return oss.str();
-}
-
-bool ERR_NICKNAMEINUSE(const std::string& receivedNick, std::vector<Client>& clients, int clientSocket)
-{
-    for (std::vector<Client>::iterator it = clients.begin(); it != clients.end(); ++it)
-    {
-        if (it->getNickName() == receivedNick)
-        {
-            std::string errorMsg = "Nickname already in use\n";
-            send(clientSocket, errorMsg.c_str(), errorMsg.size(), 0);
-            return true;
-        }
-    }
-    return false;
 }
 
 std::string RPL_NAMREPLY(Channel channel, const std::string& nickName)

@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/21 15:38:04 by olahmami          #+#    #+#             */
-/*   Updated: 2024/11/22 16:06:27 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/11/23 15:16:17 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,7 @@ void Server::joinCommand(std::string& message, std::istringstream& iss)
             it = channels.insert(std::pair<std::string, Channel>(channelName, newChannel)).first;
 
             clients[clientIndex].setIsOperator(true);
+            clients[clientIndex].setModeChannelMSG(true);
             
             std::cout << "Client " << clients[clientIndex].getNickName() << " created channel: " << channelName << std::endl;
             
@@ -90,28 +91,36 @@ void Server::joinCommand(std::string& message, std::istringstream& iss)
 
             std::map<int, std::string>& user = it->second.getUsers();
             user.insert(std::pair<int, std::string>(clients[clientIndex].getClientSocket(), clients[clientIndex].getNickName()));
+            clients[clientIndex].setModeChannelMSG(true);
 
             std::cout << "Client " << clients[clientIndex].getNickName() << " joined channel: " << channelName << std::endl;
 
-            std::string joinChannel = JOIN_CHANNEL(clients[clientIndex].getNickName(), channelName);
-            send(clients[clientIndex].getClientSocket(), joinChannel.c_str(), joinChannel.size(), 0);
-            
-            if (it->second.getTopic().empty())
+            std::map<int, std::string>::iterator userIt;
+            for (userIt = user.begin(); userIt != user.end(); ++userIt)
             {
-                std::string noTopic = RPL_NOTOPIC(channelName);
-                send(clients[clientIndex].getClientSocket(), noTopic.c_str(), noTopic.size(), 0);
+                if (userIt->first != clients[clientIndex].getClientSocket())
+                {
+                    std::string joinChannel = JOIN_CHANNEL(clients[clientIndex].getNickName(), channelName);
+                    send(userIt->first, joinChannel.c_str(), joinChannel.size(), 0);
+                    
+                    if (it->second.getTopic().empty())
+                    {
+                        std::string noTopic = RPL_NOTOPIC(channelName);
+                        send(userIt->first, noTopic.c_str(), noTopic.size(), 0);
+                    }
+                    else
+                    {
+                        std::string checkTopic = RPL_TOPIC(channelName, it->second.getTopic());
+                        send(userIt->first, checkTopic.c_str(), checkTopic.size(), 0);
+                    }
+                    
+                    std::string nameReply = RPL_NAMREPLY(it->second, clients[clientIndex].getNickName());
+                    send(userIt->first, nameReply.c_str(), nameReply.size(), 0);
+                    
+                    std::string endOfNames = RPL_ENDOFNAMES(channelName, clients[clientIndex].getNickName());
+                    send(userIt->first, endOfNames.c_str(), endOfNames.size(), 0);
+                }
             }
-            else
-            {
-                std::string checkTopic = RPL_TOPIC(channelName, it->second.getTopic());
-                send(clients[clientIndex].getClientSocket(), checkTopic.c_str(), checkTopic.size(), 0);
-            }
-            
-            std::string nameReply = RPL_NAMREPLY(it->second, clients[clientIndex].getNickName());
-            send(clients[clientIndex].getClientSocket(), nameReply.c_str(), nameReply.size(), 0);
-            
-            std::string endOfNames = RPL_ENDOFNAMES(channelName, clients[clientIndex].getNickName());
-            send(clients[clientIndex].getClientSocket(), endOfNames.c_str(), endOfNames.size(), 0);
         }
         else
         {

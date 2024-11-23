@@ -6,11 +6,39 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/21 15:35:17 by olahmami          #+#    #+#             */
-/*   Updated: 2024/11/21 15:35:36 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/11/23 10:47:53 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../Includes/ircserv.hpp"
+
+bool isValidUser(const std::string& receivedUser)
+{
+    std::istringstream iss(receivedUser);
+    std::vector<std::string> split_user;
+    std::string word;
+
+    while (iss >> word)
+        split_user.push_back(word);
+
+    if (!isAlphaWord(split_user[0]) || !isAlphaWord(split_user[3]))
+        return false;
+    if (split_user[1][0] != '0' && split_user[1].size() > 1)
+        return false;
+    if (split_user[2][0] != '*' && split_user[2].size() > 1)
+        return false;
+    if (split_user.size() == 5 && !isAlphaWord(split_user[4]))
+        return false;
+    return true;
+}
+
+void sendWelcomeMessages(int clientSocket, const std::string& nickName)
+{
+    send(clientSocket, RPL_WELCOME(nickName).c_str(), RPL_WELCOME(nickName).length(), 0);
+    send(clientSocket, RPL_YOURHOST(nickName).c_str(), RPL_YOURHOST(nickName).length(), 0);
+    send(clientSocket, RPL_CREATED(nickName).c_str(), RPL_CREATED(nickName).length(), 0);
+    send(clientSocket, RPL_MYINFO(nickName).c_str(), RPL_MYINFO(nickName).length(), 0);
+}
 
 void Server::userCommand(std::string& message)
 {

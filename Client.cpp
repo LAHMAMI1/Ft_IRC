@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/20 12:38:13 by olahmami          #+#    #+#             */
-/*   Updated: 2024/11/19 18:15:08 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/11/23 14:33:14 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@ Client::Client()
     isRegistered = false;
     isOperator = false;
     isInvited = false;
+    ModeChannelMSG = false;
 }
 
 void Client::setClientSocket(int const& clientSocket) { this->clientSocket = clientSocket; }
@@ -55,3 +56,7 @@ bool Client::getIsOperator() const { return isOperator; }
 void Client::setIsInvited(bool const& isInvited) { this->isInvited = isInvited; }
 
 bool Client::getIsInvited() const { return isInvited; }
+
+void Client::setModeChannelMSG(bool const& ModeChannelMSG) { this->ModeChannelMSG = ModeChannelMSG; }
+
+bool Client::getModeChannelMSG() const { return ModeChannelMSG; }

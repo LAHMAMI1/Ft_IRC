@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/20 10:06:30 by olahmami          #+#    #+#             */
-/*   Updated: 2024/11/19 18:14:23 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/11/23 14:33:29 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,7 @@ class Client
         bool isRegistered;
         bool isOperator;
         bool isInvited;
+        bool ModeChannelMSG;
 
     public:
         // Constructors
@@ -49,4 +50,6 @@ class Client
         bool getIsOperator() const;
         void setIsInvited(bool const& isInvited);
         bool getIsInvited() const;
+        void setModeChannelMSG(bool const& ModeChannelMSG);
+        bool getModeChannelMSG() const;
 };

@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/21 18:15:00 by olahmami          #+#    #+#             */
-/*   Updated: 2024/11/21 18:28:28 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/11/23 15:29:39 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,6 +62,15 @@ void Server::kickCommand(std::string& message, std::istringstream& iss)
                 users.erase(it);
                 userFound = true;
                 break;
+            }
+        }
+        if (userFound)
+        {
+            std::map<int, std::string>::iterator userIt;
+            for (userIt = users.begin(); userIt != users.end(); ++userIt)
+            {
+                std::string kickMessage = ":" + clients[clientIndex].getNickName() + " KICK " + channelName + " " + nickName + " :" + comment + "\r\n";
+                send(userIt->first, kickMessage.c_str(), kickMessage.size(), 0);
             }
         }
         if (!userFound)

@@ -6,11 +6,37 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/21 15:34:31 by olahmami          #+#    #+#             */
-/*   Updated: 2024/11/21 15:34:49 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/11/23 10:13:41 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../Includes/ircserv.hpp"
+
+bool NICKNAMEINUSE(const std::string& receivedNick, std::vector<Client>& clients, int clientSocket)
+{
+    for (std::vector<Client>::iterator it = clients.begin(); it != clients.end(); ++it)
+    {
+        if (it->getNickName() == receivedNick)
+        {
+            std::string errorMsg = ERR_NICKNAMEINUSE(intToString(clientSocket), receivedNick);
+            send(clientSocket, errorMsg.c_str(), errorMsg.size(), 0);
+            return true;
+        }
+    }
+    return false;
+}
+
+bool isValidNick(const std::string& receivedNick)
+{
+    if (!isalpha(receivedNick[0]))
+        return false;
+    for (size_t i = 1; i < receivedNick.size(); i++)
+    {
+        if (!isalnum(receivedNick[i]) && receivedNick[i] != '_' && receivedNick[i] != '-')
+            return false;
+    }
+    return true;
+}
 
 void Server::nickCommand(std::string& message)
 {
@@ -20,7 +46,7 @@ void Server::nickCommand(std::string& message)
     {
         receivedNick = message.substr(5);
         trim(receivedNick);
-        if (ERR_NICKNAMEINUSE(receivedNick, clients, clients[clientIndex].getClientSocket()))
+        if (NICKNAMEINUSE(receivedNick, clients, clients[clientIndex].getClientSocket()))
             return;
         if (NEEDMOREPARAMS(message, clients[clientIndex].getClientSocket(), 2))
             return;

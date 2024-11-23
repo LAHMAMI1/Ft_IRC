@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/03 18:21:28 by olahmami          #+#    #+#             */
-/*   Updated: 2024/11/18 12:38:16 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/11/23 10:10:08 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ bool isValidUser(const std::string& receivedUser);
 std::string getCurrentTime();
 void sendWelcomeMessages(int clientSocket, const std::string& nickName);
 std::string intToString(int num);
-bool ERR_NICKNAMEINUSE(const std::string& receivedNick, std::vector<Client>& clients, int clientSocket);
+bool NICKNAMEINUSE(const std::string& receivedNick, std::vector<Client>& clients, int clientSocket);
 std::string RPL_NAMREPLY(Channel channel, const std::string& nickName);
 bool findNickName(const std::vector<Client>& clients, const std::string& target);
 bool findNickInChannel(const std::map<int, std::string>& users, const std::string& target);

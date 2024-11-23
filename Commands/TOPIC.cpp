@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/21 17:28:23 by olahmami          #+#    #+#             */
-/*   Updated: 2024/11/21 18:12:24 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/11/23 15:36:46 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,7 +71,13 @@ void Server::topicCommand(std::string& message, std::istringstream& iss)
             {
                 it->second.setTopic("");
                 std::string clearTopic = RPL_TOPIC(channelName, "");
-                send(clients[clientIndex].getClientSocket(), clearTopic.c_str(), clearTopic.size(), 0);
+                std::map<int, std::string>& user = it->second.getUsers();
+                std::map<int, std::string>::iterator userIt;
+                for (userIt = user.begin(); userIt != user.end(); ++userIt)
+                {
+                    if (userIt->first != clients[clientIndex].getClientSocket())
+                        send(userIt->first, clearTopic.c_str(), clearTopic.size(), 0);
+                }
             }
         }    
         // Set the Topic
@@ -79,7 +85,13 @@ void Server::topicCommand(std::string& message, std::istringstream& iss)
         {
             it->second.setTopic(newTopic.substr(1));
             std::string setTopic = RPL_TOPIC(channelName, newTopic.substr(1));
-            send(clients[clientIndex].getClientSocket(), setTopic.c_str(), setTopic.size(), 0);
+            std::map<int, std::string>& user = it->second.getUsers();
+            std::map<int, std::string>::iterator userIt;
+            for (userIt = user.begin(); userIt != user.end(); ++userIt)
+            {
+                if (userIt->first != clients[clientIndex].getClientSocket())
+                    send(userIt->first, setTopic.c_str(), setTopic.size(), 0);       
+            }
         }
     }
     else
