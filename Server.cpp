@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/20 11:59:09 by olahmami          #+#    #+#             */
-/*   Updated: 2024/11/23 17:19:40 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/11/26 21:23:03 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,10 @@ void Server::server(int ac, char **av)
 
         // Resize the events vector if it is full
         if (numEvents == maxEvents)
-            events.resize(maxEvents * 2);
+        {
+            maxEvents *= 2;
+            events.resize(maxEvents);
+        }
 
         for (int i = 0; i < numEvents; i++)
         {
@@ -55,13 +58,23 @@ void Server::server(int ac, char **av)
             {
                 std::fill(buffer, buffer + sizeof(buffer), 0);
                 bytesReceived = recv(events[i].data.fd, buffer, sizeof(buffer), 0);
-                std::cout << "Client " <<  events[i].data.fd << " sent: [" << buffer << "]" << std::endl;
             
+                for (std::vector<Client>::size_type j = 0; j < clients.size(); j++)
+                {
+                    if (clients[j].getClientSocket() == events[i].data.fd)
+                    {
+                        clientIndex = j;
+                        break;
+                    }
+                }
+
                 std::string message(buffer);
                 trim(message);
                 std::istringstream iss(message);
                 std::string command;
                 iss >> command;
+
+                std::cout << "Client " <<  events[i].data.fd << " sent: [" << message << "]" << std::endl;
                 
                 if (bytesReceived == 0)
                 {

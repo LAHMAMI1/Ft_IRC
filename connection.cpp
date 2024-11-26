@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/21 12:44:22 by olahmami          #+#    #+#             */
-/*   Updated: 2024/11/21 14:55:32 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/11/24 12:27:30 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,7 +100,7 @@ void Server::getClientToServer(int& i)
     send(clients[clientIndex].getClientSocket(), passwordRequest.c_str(), passwordRequest.size(), 0);
 
     // Add the client socket to the epoll instance
-    evServer.events = EPOLLIN | EPOLLET;
+    evServer.events = EPOLLIN;
     evServer.data.fd = clients[clientIndex].getClientSocket();
     if (epoll_ctl(epollSocket, EPOLL_CTL_ADD, clients[clientIndex].getClientSocket(), &evServer) < 0)
         throw std::runtime_error("Epoll control client failed");
