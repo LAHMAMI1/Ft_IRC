@@ -6,11 +6,11 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/21 12:44:22 by olahmami          #+#    #+#             */
-/*   Updated: 2024/11/24 12:27:30 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/11/30 18:10:50 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Includes/ircserv.hpp"
+#include "../../Includes/ircserv.hpp"
 
 void Server::serverInit(int ac, char **av)
 {

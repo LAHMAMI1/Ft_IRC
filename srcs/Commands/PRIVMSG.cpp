@@ -6,11 +6,11 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/22 15:08:32 by olahmami          #+#    #+#             */
-/*   Updated: 2024/11/22 17:28:35 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/11/30 18:10:35 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../Includes/ircserv.hpp"
+#include "../../Includes/ircserv.hpp"
 
 void Server::privmsgCommand(std::string& message, std::istringstream& iss)
 {

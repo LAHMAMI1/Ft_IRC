@@ -6,11 +6,11 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/21 14:21:37 by olahmami          #+#    #+#             */
-/*   Updated: 2024/11/23 10:48:22 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/11/30 18:10:54 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Includes/ircserv.hpp"
+#include "../../Includes/ircserv.hpp"
 
 void    sigHandler(int signum)
 {

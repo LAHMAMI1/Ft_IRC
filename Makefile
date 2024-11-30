@@ -6,7 +6,7 @@
 #    By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/06/03 12:31:08 by olahmami          #+#    #+#              #
-#    Updated: 2024/11/22 18:03:07 by olahmami         ###   ########.fr        #
+#    Updated: 2024/11/30 18:12:07 by olahmami         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -14,22 +14,22 @@ CXX = c++
 CXXFLAGS = -std=c++98 -Wall -Werror -Wextra -fsanitize=address
 NAME = ircserv
 SRCS = 	ircserv.cpp \
-		Server.cpp \
-		Client.cpp \
-		Channel.cpp \
-		outils.cpp \
-		connection.cpp \
-		Commands/INVITE.cpp \
-		Commands/JOIN.cpp \
-		Commands/KICK.cpp \
-		Commands/MODE.cpp \
-		Commands/NICK.cpp \
-		Commands/PASS.cpp \
-		Commands/TOPIC.cpp \
-		Commands/USER.cpp \
-		Commands/PRIVMSG.cpp \
-		Commands/PING.cpp \
-		Commands/QUIT.cpp \
+		srcs/Helpers/outils.cpp \
+		srcs/Helpers/connection.cpp \
+		srcs/Classes/Server.cpp \
+		srcs/Classes/Client.cpp \
+		srcs/Classes/Channel.cpp \
+		srcs/Commands/INVITE.cpp \
+		srcs/Commands/JOIN.cpp \
+		srcs/Commands/KICK.cpp \
+		srcs/Commands/MODE.cpp \
+		srcs/Commands/NICK.cpp \
+		srcs/Commands/PASS.cpp \
+		srcs/Commands/TOPIC.cpp \
+		srcs/Commands/USER.cpp \
+		srcs/Commands/PRIVMSG.cpp \
+		srcs/Commands/PING.cpp \
+		srcs/Commands/QUIT.cpp \
 
 OBJS = $(SRCS:.cpp=.o)
 
