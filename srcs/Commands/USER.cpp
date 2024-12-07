@@ -6,26 +6,21 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/21 15:35:17 by olahmami          #+#    #+#             */
-/*   Updated: 2024/11/30 18:10:46 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/12/07 18:49:33 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../Includes/ircserv.hpp"
 
-bool isValidUser(const std::string& receivedUser)
+bool isValidUser(std::vector<std::string>& split_user)
 {
-    std::istringstream iss(receivedUser);
-    std::vector<std::string> split_user;
-    std::string word;
-
-    while (iss >> word)
-        split_user.push_back(word);
-
+    for (std::vector<std::string>::size_type i = 0; i < split_user.size(); i++)
+        std::cout << "split_user[" << i << "] = " << split_user[i] << std::endl;
     if (!isAlphaWord(split_user[0]) || !isAlphaWord(split_user[3]))
         return false;
-    if (split_user[1][0] != '0' && split_user[1].size() > 1)
+    if (split_user[1][0] != '0' || split_user[1].size() > 1)
         return false;
-    if (split_user[2][0] != '*' && split_user[2].size() > 1)
+    if (split_user[2][0] != '*' || split_user[2].size() > 1)
         return false;
     if (split_user.size() == 5 && !isAlphaWord(split_user[4]))
         return false;
@@ -46,11 +41,19 @@ void Server::userCommand(std::string& message)
 
     if (message.rfind("USER", 0) == 0)
     {
-        receivedUser = message.substr(5);
-        trim(receivedUser);
         if (NEEDMOREPARAMS(message, clients[clientIndex].getClientSocket(), 5))
             return;
-        else if (!isValidUser(receivedUser))
+
+        receivedUser = message.substr(5);
+        trim(receivedUser);
+        std::istringstream iss(receivedUser);
+        std::vector<std::string> split_user;
+        std::string word;
+
+        while (iss >> word)
+            split_user.push_back(word);
+
+        if (!isValidUser(split_user))
         {
             std::cout << "Client " << clients[clientIndex].getClientSocket() << " " << receivedUser << " :Invalid user" << std::endl;
             std::string errorMsg = "Invalid user\n";
@@ -58,11 +61,6 @@ void Server::userCommand(std::string& message)
         }
         else
         {
-            std::istringstream iss(receivedUser);
-            std::vector<std::string> split_user;
-            std::string part;
-            while (iss >> part)
-                split_user.push_back(part);
             std::cout << "Client " << clients[clientIndex].getClientSocket() << " set user to: " << split_user[0] << std::endl;
             sendWelcomeMessages(clients[clientIndex].getClientSocket(), clients[clientIndex].getNickName());
             clients[clientIndex].setUserName(split_user[0]);

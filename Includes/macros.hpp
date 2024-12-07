@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/05 09:59:58 by olahmami          #+#    #+#             */
-/*   Updated: 2024/11/23 10:10:24 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/12/07 17:52:59 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,8 +24,8 @@
 #define ERR_NEEDMOREPARAMS(clientSocket, cmd) (":irc.chat.com 461 " + (clientSocket) + " " + (cmd) + " :Not enough parameters\r\n")
 #define ERR_PASSWDMISMATCH(clientSocket) (":irc.chat.com 464 " + (clientSocket) + " :Password incorrect\r\n")
 #define ERR_ALREADYREGISTERED(clientSocket) (":irc.chat.com 462 " + (clientSocket) + " :You may not reregister\r\n")
-#define ERR_NICKNAMEINUSE(clientSocket, nick) (":irc.chat.com 433 " + (clientSocket) + " " + (nick) + " :Nickname is already in use\r\n")
-#define ERR_ERRONEUSNICKNAME(clientSocket, nick) (":irc.chat.com 432 " + (clientSocket) + " " + (nick) + " :Erroneus nickname\r\n")
+#define ERR_NICKNAMEINUSE(clientSocket, nick) (":irc.chat.com " + (clientSocket) + " " + (nick) + " :Nickname is already in use\r\n")
+#define ERR_ERRONEUSNICKNAME(clientSocket, nick) (":irc.chat.com " + (clientSocket) + " " + (nick) + " :Erroneus nickname\r\n")
 #define ERR_NONICKNAMEGIVEN(clientSocket) (":irc.chat.com 431 " + (clientSocket) + " :No nickname given\r\n")
 #define ERR_NOSUCHCHANNEL(channelName) (":irc.chat.com 403 " + (channelName) + " :No such channel\r\n")
 #define ERR_USERNOTINCHANNEL(nickName, channelName) (":irc.chat.com 441 " + (nickName) + " " + (channelName) + " :They aren't on that channel\r\n")

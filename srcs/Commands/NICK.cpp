@@ -6,13 +6,13 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/21 15:34:31 by olahmami          #+#    #+#             */
-/*   Updated: 2024/11/30 18:10:23 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/12/07 18:10:41 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../Includes/ircserv.hpp"
 
-bool NICKNAMEINUSE(const std::string& receivedNick, std::vector<Client>& clients, int clientSocket)
+bool NICKNAMEINUSE(std::string& receivedNick, std::vector<Client>& clients, int clientSocket)
 {
     for (std::vector<Client>::iterator it = clients.begin(); it != clients.end(); ++it)
     {
@@ -26,7 +26,7 @@ bool NICKNAMEINUSE(const std::string& receivedNick, std::vector<Client>& clients
     return false;
 }
 
-bool isValidNick(const std::string& receivedNick)
+bool isValidNick(std::string& receivedNick)
 {
     if (!isalpha(receivedNick[0]))
         return false;
@@ -44,11 +44,13 @@ void Server::nickCommand(std::string& message)
 
     if (message.rfind("NICK", 0) == 0)
     {
+        if (NEEDMOREPARAMS(message, clients[clientIndex].getClientSocket(), 2))
+            return;
+
         receivedNick = message.substr(5);
         trim(receivedNick);
+
         if (NICKNAMEINUSE(receivedNick, clients, clients[clientIndex].getClientSocket()))
-            return;
-        if (NEEDMOREPARAMS(message, clients[clientIndex].getClientSocket(), 2))
             return;
         else if (!isValidNick(receivedNick))
         {
