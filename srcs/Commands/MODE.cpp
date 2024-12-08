@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/21 18:21:58 by olahmami          #+#    #+#             */
-/*   Updated: 2024/11/30 18:10:19 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/12/08 13:13:05 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -109,7 +109,7 @@ void Server::modeCommand(std::string& message, std::istringstream& iss)
     {
         if (mode == "+k")
         {
-            if (param.find(' '))
+            if (param.find(' ') != std::string::npos)
             {
                 std::string errorMsg = ERR_INVALIDKEY(clients[clientIndex].getNickName(), channelName);
                 send(clients[clientIndex].getClientSocket(), errorMsg.c_str(), errorMsg.size(), 0);

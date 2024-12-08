@@ -6,7 +6,7 @@
 /*   By: olahmami <olahmami@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/21 15:35:17 by olahmami          #+#    #+#             */
-/*   Updated: 2024/12/07 18:49:33 by olahmami         ###   ########.fr       */
+/*   Updated: 2024/12/07 21:19:10 by olahmami         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,6 @@
 
 bool isValidUser(std::vector<std::string>& split_user)
 {
-    for (std::vector<std::string>::size_type i = 0; i < split_user.size(); i++)
-        std::cout << "split_user[" << i << "] = " << split_user[i] << std::endl;
     if (!isAlphaWord(split_user[0]) || !isAlphaWord(split_user[3]))
         return false;
     if (split_user[1][0] != '0' || split_user[1].size() > 1)
